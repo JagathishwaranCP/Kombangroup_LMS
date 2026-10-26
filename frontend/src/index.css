@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #E2E8F0;
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* KOMBAN Learning Platform landing (v2) */
+.komban-landing {
+  --black: #0A0A0A;
+  --gold: #C09A2E;
+  --gold-light: #E8CB63;
+  --gold-dark: #9A7B1F;
+  --gold-gradient: linear-gradient(135deg, #9A7B1F 0%, #E8CB63 50%, #B8932F 100%);
+  --heading: #111111;
+  --body: #333333;
+  --bg: #FFFFFF;
+  --bg-alt: #FAF8F2;
+  --border: #E9E2CC;
+  font-family: 'Inter', sans-serif;
+  color: var(--body);
+  background: var(--bg);
+  line-height: 1.7;
+}
+
+.komban-landing h1,
+.komban-landing h2,
+.komban-landing h3,
+.komban-landing h4 {
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.15;
+}
+
+.komban-landing .heading-dark { color: var(--heading); }
+.komban-landing .heading-light { color: #FFFFFF; }
+
+.komban-landing .gold-text {
+  display: inline;
+  background-image: var(--gold-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
+@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
+  .komban-landing .gold-text {
+    color: var(--gold) !important;
+    -webkit-text-fill-color: var(--gold) !important;
+    background-image: none;
+  }
+}
+
+.komban-landing .btn-gold {
+  background: var(--gold-gradient);
+  color: #0A0A0A !important;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  padding: 16px 32px;
+  box-shadow: 0 8px 24px rgba(192, 154, 46, 0.22);
+  transition: opacity 0.3s ease;
+}
+
+.komban-landing .btn-gold:hover { opacity: 0.92; }
+
+.komban-landing .btn-primary {
+  background: var(--black);
+  color: #ffffff !important;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  padding: 16px 32px;
+  transition: background 0.3s ease;
+}
+
+.komban-landing .btn-primary:hover { background: #222; }
+
+.komban-landing .btn-secondary {
+  background: #fff;
+  color: #111111 !important;
+  border: 1px solid #111111;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  padding: 16px 32px;
+  transition: background 0.3s ease;
+}
+
+.komban-landing .btn-secondary:hover { background: var(--bg-alt); }
+
+.komban-landing .btn-login-outline {
+  border: 1px solid var(--gold);
+  color: var(--gold-light) !important;
+  background: transparent;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  padding: 12px 24px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.komban-landing .btn-login-outline:hover {
+  background: rgba(192, 154, 46, 0.12);
+  color: #FFFFFF !important;
+}
+
+.komban-landing .eyebrow {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--gold-dark); /* small gold on light: darker for contrast */
+}
+
+.komban-landing .eyebrow-on-dark {
+  color: var(--gold-light);
+}
+
+.komban-landing .container-k {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 20px;
+  padding-right: 20px;
+}
+
+@media (min-width: 1024px) {
+  .komban-landing .container-k {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+}
+
+.komban-landing .section-pad {
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+
+@media (min-width: 1024px) {
+  .komban-landing .section-pad {
+    padding-top: 96px;
+    padding-bottom: 96px;
+  }
+}
+
+.komban-landing input,
+.komban-landing select,
+.komban-landing textarea {
+  color: #111111 !important;
+  background: #ffffff;
+}
+
+.komban-landing input::placeholder,
+.komban-landing textarea::placeholder {
+  color: #888888;
+  opacity: 1;
+}
+
+.komban-landing a:focus-visible,
+.komban-landing button:focus-visible,
+.komban-landing input:focus-visible,
+.komban-landing select:focus-visible,
+.komban-landing textarea:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .komban-landing * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #E2E8F0; }
+::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: #64748b; }
