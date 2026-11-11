@@ -23,7 +23,6 @@ import string
 import pandas as pd     
 import requests 
 import razorpay
-import google.generativeai as genai 
 import re  
 import schemas
 import random
@@ -56,8 +55,6 @@ from sqlalchemy import text
 from token_manager import TokenManager
 
 
-AWS_LAMBDA_URL = os.getenv("AWS_LAMBDA_URL")
-        
 # Load environment variables
 load_dotenv()
 
@@ -76,7 +73,12 @@ async def init_models():
         # 1. Create tables if they don't exist
         await conn.run_sync(models.Base.metadata.create_all)
         
-        # 2. ✅ AUTO-MIGRATION: Update existing tables
+        # 2. ✅ AUTO-MIGRATION: Update existing tables (skip on SQLite)
+        dialect = conn.dialect.name
+        if dialect == "sqlite":
+            print("SQLite detected — skipping ALTER TABLE migrations (create_all covers schema).")
+            return
+
         print("Checking for database migrations...")
         try:
             # Existing migrations
@@ -132,17 +134,19 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/login")
 # --- 💳 RAZORPAY ---
 RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET")
-client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
-
-# --- ✨ GEMINI AI ---
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+client = None
+if RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET and "your_razorpay" not in RAZORPAY_KEY_ID:
+    try:
+        client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
+    except Exception as e:
+        print(f"Razorpay init skipped: {e}")
+else:
+    print("Razorpay keys not configured — payment endpoints will be unavailable locally.")
 
 # --- 📋 DATA MODELS ---
 # (Keeping your existing Pydantic models)
 class UserCreate(BaseModel):
-    email: str; password: str; name: str; role: str; phone_number: str
+    email: str; password: str; name: str; role: str; phone_number: Optional[str] = None
 
 class ModuleCreate(BaseModel):
     title: str; order: int
@@ -192,16 +196,6 @@ class PaymentVerifyRequest(BaseModel):
 class PasswordChange(BaseModel):
     new_password: str
 
-# Code Test Models
-class ProblemSchema(BaseModel):
-    title: str; description: str; difficulty: str; test_cases: str 
-
-class CodeTestCreate(BaseModel):
-    title: str; pass_key: str; time_limit: int; problems: List[ProblemSchema]
-
-class TestSubmission(BaseModel):
-    test_id: int; score: int; problems_solved: int; time_taken: str
-
 class ContentUpdate(BaseModel):
     title: Optional[str] = None; url: Optional[str] = None; resource_links: Optional[List[ResourceLinkInput]] = None
 
@@ -212,12 +206,6 @@ class LibraryBulkAddRequest(BaseModel):
 class LibraryImportModulesRequest(BaseModel):
     target_course_id: int
     module_ids: List[int]
-
-class CodeExecutionRequest(BaseModel):
-    source_code: str; stdin: str; language_id: int = 71
-    
-class AIGenerateRequest(BaseModel):
-    title: str
 
 class LiveSessionRequest(BaseModel):
     youtube_url: str; topic: str
@@ -235,28 +223,9 @@ class CourseUpdate(BaseModel):
     # If your DB has a duration column, add it here. If not, remove this line.
     # duration: Optional[str] = None
 
-class ChallengeCreate(BaseModel):
-    title: str; description: str; difficulty: str; test_cases: str
- 
 class ConfirmationRequest(BaseModel):
     lesson_title: str; file_name: str
 
-class CodePayload(BaseModel):
-    source_code: str
-    language_id: int
-    # ✅ NEW: Accepts a list of test cases (Batch Execution)
-    # Example: [{"input": "5", "output": "25"}, {"input": "10", "output": "100"}]
-    test_cases: List[Dict[str, Any]]
-    # When both set, server loads canonical cases from DB (Code Arena integrity)
-    code_test_id: Optional[int] = None
-    problem_id: Optional[int] = None
-    # "dry_run" = only non-hidden cases (when loading from DB)
-    execution_mode: Optional[str] = None
-
-class OTPLoginRequest(BaseModel):
-    phone_number: str
-    
-    
 class ModuleUpdate(BaseModel):
     title: str
 
@@ -272,12 +241,6 @@ class NotificationResponse(BaseModel):
     is_read: bool
     created_at: datetime
         
-class ChallengeUpdate(BaseModel):
-    title: Optional[str] = None
-    description: Optional[str] = None
-    difficulty: Optional[str] = None
-    test_cases: Optional[str] = None
-
 def normalize_resource_links(resource_links: Optional[List[ResourceLinkInput]]) -> List[Dict[str, str]]:
     cleaned: List[Dict[str, str]] = []
     for item in resource_links or []:
@@ -703,36 +666,6 @@ async def bulk_admit_students(file: UploadFile = File(...), course_id: int = For
 
     return {"message": f"Successfully enrolled {count} students. Emails are being sent."}
 
-@app.post("/api/v1/ai/generate-challenge") # 👈 Changed from "/generate" to match Frontend
-async def generate_problem_content(req: AIGenerateRequest):
-    if not GEMINI_API_KEY: raise HTTPException(status_code=500, detail="API Key missing")
-    try:
-        prompt = f"""Create a programming challenge on "{req.title}". OUTPUT JSON ONLY: {{ "description": "...", "test_cases": [ {{"input": "...", "output": "...", "hidden": false}} ] }}"""
-        response = await asyncio.to_thread(model.generate_content, prompt)
-        text = response.text.strip()
-        match = re.search(r'\{.*\}', text, re.DOTALL)
-        if not match: raise ValueError("Invalid JSON")
-        ai_data = json.loads(match.group())
-        return { "description": ai_data.get("description"), "test_cases": json.dumps(ai_data.get("test_cases", [])) }
-    except Exception as e: raise HTTPException(status_code=500, detail=f"AI Error: {str(e)}")
-
-@app.post("/api/v1/code-tests")
-async def create_code_test(test: CodeTestCreate, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(require_instructor)):
-    new_test = models.CodeTest(title=test.title, pass_key=test.pass_key, time_limit=test.time_limit, instructor_id=current_user.id)
-    db.add(new_test)
-    await db.commit()
-    await db.refresh(new_test)
-    
-    for prob in test.problems:
-        new_prob = models.Problem(test_id=new_test.id, title=prob.title, description=prob.description, difficulty=prob.difficulty, test_cases=prob.test_cases)
-        db.add(new_prob)
-    await db.commit()
-    students = await db.execute(select(models.User.id).where(models.User.role == "student"))
-    for uid in students.scalars().all():
-        db.add(models.Notification(user_id=uid, title="New Code Arena!", message=f"Challenge '{test.title}' is live. Test your skills now!", created_at=datetime.utcnow()))
-    await db.commit()
-    return {"message": "Test Created Successfully!"}
-
 @app.get("/api/v1/courses/{course_id}")
 async def get_course_details(course_id: int, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(models.Course).where(models.Course.id == course_id))
@@ -740,303 +673,6 @@ async def get_course_details(course_id: int, db: AsyncSession = Depends(get_db))
     if not course: raise HTTPException(status_code=404, detail="Course not found")
     return course
 
-@app.get("/api/v1/code-tests")
-async def get_code_tests(db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    # 1. Instructor View: Show ALL their created tests
-    if current_user.role == "instructor": 
-        res = await db.execute(select(models.CodeTest).where(models.CodeTest.instructor_id == current_user.id))
-        return res.scalars().all()
-    
-    # 2. Student View: Show ONLY Pending/Active tests
-    res = await db.execute(select(models.CodeTest))
-    tests = res.scalars().all()
-    
-    response_data = []
-    
-    for t in tests:
-        # Check if a result already exists for this student + test
-        sub_res = await db.execute(select(models.TestResult).where(
-            models.TestResult.test_id == t.id, 
-            models.TestResult.user_id == current_user.id
-        ))
-        submission = sub_res.scalars().first()
-        
-        # ✅ LOGIC CHANGE: If submission exists (Completed/Terminated), SKIP IT.
-        if submission:
-            continue
-            
-        # If no submission, add to list (Available to take)
-        response_data.append({ 
-            "id": t.id, 
-            "title": t.title, 
-            "time_limit": t.time_limit, 
-            "completed": False 
-        })
-        
-    return response_data
-@app.post("/api/v1/code-tests/{test_id}/start")
-async def start_code_test(test_id: int, pass_key: str = Form(...), db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    # Verify not submitted
-    res = await db.execute(select(models.TestResult).where(models.TestResult.test_id == test_id, models.TestResult.user_id == current_user.id))
-    if res.scalars().first(): raise HTTPException(status_code=403, detail="Test already submitted.")
-    
-    # Eager load problems
-    res_test = await db.execute(select(models.CodeTest).options(selectinload(models.CodeTest.problems)).where(models.CodeTest.id == test_id))
-    test = res_test.scalars().first()
-    
-    if not test: raise HTTPException(status_code=404)
-    if test.pass_key != pass_key: raise HTTPException(status_code=403, detail="Invalid Key")
-    
-    return { "id": test.id, "title": test.title, "time_limit": test.time_limit, "problems": [{"id": p.id, "title": p.title, "description": p.description, "test_cases": p.test_cases} for p in test.problems] }
-
-@app.post("/api/v1/code-tests/submit")
-async def submit_test_result(sub: TestSubmission, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    result = models.TestResult(test_id=sub.test_id, user_id=current_user.id, score=sub.score, problems_solved=sub.problems_solved, time_taken=sub.time_taken)
-    db.add(result)
-    await db.commit()
-    return {"message": "Submitted"}
-
-@app.get("/api/v1/code-tests/{test_id}/results")
-async def get_test_results(test_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(require_instructor)):
-    # Eager load student details
-    res = await db.execute(select(models.TestResult).options(selectinload(models.TestResult.student)).where(models.TestResult.test_id == test_id))
-    results = res.scalars().all()
-    return [{"student_name": r.student.full_name, "email": r.student.email, "score": r.score, "problems_solved": r.problems_solved, "time_taken": r.time_taken, "submitted_at": r.submitted_at.strftime("%Y-%m-%d %H:%M")} for r in results]
-
-@app.delete("/api/v1/code-tests/{test_id}")
-async def delete_code_test(test_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(require_instructor)):
-    res = await db.execute(select(models.CodeTest).where(models.CodeTest.id == test_id))
-    test = res.scalars().first()
-    if not test:
-        raise HTTPException(status_code=404, detail="Challenge not found")
-    if test.instructor_id != current_user.id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-    await db.execute(delete(models.TestResult).where(models.TestResult.test_id == test_id))
-    await db.execute(delete(models.Problem).where(models.Problem.test_id == test_id))
-    await db.execute(delete(models.CodeTest).where(models.CodeTest.id == test_id))
-    await db.commit()
-    return {"message": "Challenge deleted"}
-
-
-def _normalize_judge_text(s: Any) -> str:
-    if s is None:
-        return ""
-    t = str(s).replace("\r\n", "\n").replace("\r", "\n").strip()
-    return t
-
-
-def _pick_output_for_single_line_expected(actual: str, expected: str) -> str:
-    """If expected is one logical line but actual has many (prints + answer), compare the last non-empty line."""
-    a = _normalize_judge_text(actual)
-    e = _normalize_judge_text(expected)
-    if not e or "\n" in e:
-        return a
-    if "\n" in a:
-        lines = [ln.strip() for ln in a.split("\n") if ln.strip() != ""]
-        if lines:
-            return lines[-1]
-    return a
-
-
-def _try_parse_judge_number(s: str) -> Optional[float]:
-    s = s.strip()
-    if s == "":
-        return None
-    try:
-        return float(s)
-    except ValueError:
-        return None
-
-
-def _judge_outputs_equal(raw_actual: str, raw_expected: str) -> Tuple[bool, str, str]:
-    """
-    Returns (passed, display_actual, display_expected).
-    Aligns with Code Arena / Pyodide: tolerate extra prints, whitespace, and numeric formatting.
-    """
-    e = _normalize_judge_text(raw_expected)
-    if e == "":
-        return False, _normalize_judge_text(raw_actual), e
-    a = _normalize_judge_text(_pick_output_for_single_line_expected(raw_actual, e))
-    e = _normalize_judge_text(e)
-    if a == e:
-        return True, a, e
-    if " ".join(a.split()) == " ".join(e.split()):
-        return True, a, e
-    na, ne = _try_parse_judge_number(a), _try_parse_judge_number(e)
-    if na is not None and ne is not None:
-        if na == ne or abs(na - ne) < 1e-9:
-            return True, a, e
-    return False, a, e
-
-
-async def _resolve_execute_test_cases(
-    payload: CodePayload, db: AsyncSession, current_user: models.User
-) -> List[Dict[str, Any]]:
-    """Use DB-backed cases for Code Arena when IDs are provided; otherwise trust the client list."""
-    if payload.code_test_id is None or payload.problem_id is None:
-        return payload.test_cases
-
-    prob_res = await db.execute(select(models.Problem).where(models.Problem.id == payload.problem_id))
-    prob = prob_res.scalars().first()
-    if not prob or prob.test_id != payload.code_test_id:
-        raise HTTPException(status_code=400, detail="Invalid problem or code test")
-
-    ct_res = await db.execute(select(models.CodeTest).where(models.CodeTest.id == payload.code_test_id))
-    code_test = ct_res.scalars().first()
-    if not code_test:
-        raise HTTPException(status_code=404, detail="Code test not found")
-
-    if current_user.role == "instructor":
-        if code_test.instructor_id != current_user.id:
-            raise HTTPException(status_code=403, detail="Not authorized")
-    elif current_user.role == "student":
-        done = await db.execute(
-            select(models.TestResult).where(
-                models.TestResult.test_id == payload.code_test_id,
-                models.TestResult.user_id == current_user.id,
-            )
-        )
-        if done.scalars().first():
-            raise HTTPException(status_code=403, detail="Test already submitted")
-    else:
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    try:
-        cases: List[Dict[str, Any]] = json.loads(prob.test_cases)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail="Invalid stored test cases")
-
-    if payload.execution_mode == "dry_run":
-        cases = [c for c in cases if not c.get("hidden")]
-    return cases
-
-
-# Judge0 Execution (Async Request) -> Replaced with AWS Lambda Proxy
-@app.post("/api/v1/execute")
-async def execute_code(
-    payload: CodePayload,
-    db: AsyncSession = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
-):
-    if not AWS_LAMBDA_URL:
-        raise HTTPException(status_code=500, detail="Compiler Configuration Error (Missing AWS URL)")
-
-    test_cases = await _resolve_execute_test_cases(payload, db, current_user)
-    tc_count = len(test_cases)
-
-    if tc_count == 0:
-        return {"error": "No test cases to run for this request.", "stats": {"passed": 0, "total": 0}, "results": []}
-
-    try:
-        # 1. Forward to AWS Lambda (The Runner)
-        # We assume Lambda returns a list of results with "actual" output
-        response = requests.post(AWS_LAMBDA_URL, json={
-            "source_code": payload.source_code,
-            "language_id": payload.language_id,
-            "test_cases": test_cases,
-            "stdin": "" 
-        }, timeout=15)
-        
-        try:
-            data = response.json()
-        except json.JSONDecodeError:
-            return {
-                "error": "Compiler returned invalid JSON.",
-                "stats": {"passed": 0, "total": tc_count},
-                "results": [],
-            }
-
-        # Handle AWS API Gateway wrapping
-        if isinstance(data, dict) and "body" in data:
-            body = data.get("body")
-            if isinstance(body, str):
-                try:
-                    data = json.loads(body)
-                except json.JSONDecodeError:
-                    return {
-                        "error": "Compiler `body` field is not valid JSON.",
-                        "stats": {"passed": 0, "total": tc_count},
-                        "results": [],
-                    }
-            else:
-                data = body
-
-        # Lambda Function URL often returns a bare JSON string (e.g. "Hello from Lambda!")
-        if isinstance(data, str):
-            return {
-                "error": "Compiler service is not returning the code-runner JSON format (got plain text or a JSON string). The Lambda must return an object with `results` and `stats`.",
-                "detail": data[:400],
-                "stats": {"passed": 0, "total": tc_count},
-                "results": [],
-            }
-
-        if not isinstance(data, dict):
-            return {
-                "error": "Compiler returned an unexpected response type.",
-                "stats": {"passed": 0, "total": tc_count},
-                "results": [],
-            }
-
-        # --- 🛡️ THE FIX: BACKEND VERIFICATION LAYER ---
-        # The Lambda runs the code, but we (the Backend) will GRADE it.
-        # This fixes the issue where Java/C "passes" without actually matching the output.
-
-        results_list = data.get("results")
-        if not isinstance(results_list, list):
-            results_list = []
-
-        if len(results_list) == 0:
-            return {
-                "error": data.get("error")
-                or "Compiler did not return a `results` array. Update the Lambda to return one entry per test case with `input`, `expected`, `actual`, and optional `status`.",
-                "stats": {"passed": 0, "total": tc_count},
-                "results": [],
-            }
-
-        passed_count = 0
-
-        for i, res in enumerate(results_list):
-            if not isinstance(res, dict):
-                continue
-            rid = res.get("id")
-            idx = rid if isinstance(rid, int) and 0 <= rid < len(test_cases) else i
-            if idx < 0 or idx >= len(test_cases):
-                idx = i if i < len(test_cases) else len(test_cases) - 1
-            tc = test_cases[idx] if isinstance(test_cases[idx], dict) else {}
-
-            # DB / Code Arena store expected value as "output"; Lambda often leaves "expected" blank.
-            canon_expected = tc.get("expected", tc.get("output", ""))
-            canon_input = tc.get("input", tc.get("stdin", ""))
-
-            raw_actual = str(res.get("actual", ""))
-            raw_expected = str(res.get("expected", res.get("output", "")))
-            if not raw_expected.strip() and canon_expected is not None and str(canon_expected).strip():
-                raw_expected = str(canon_expected)
-            if not str(res.get("input", res.get("stdin", ""))).strip() and str(canon_input).strip():
-                res["input"] = canon_input
-
-            # 2–3. RE-GRADE with same rules as local Pyodide (multi-line stdout, whitespace, numbers)
-            ok, disp_a, disp_e = _judge_outputs_equal(raw_actual, raw_expected)
-            res["actual"] = disp_a
-            res["expected"] = disp_e
-            if ok:
-                res["status"] = "Passed"
-                passed_count += 1
-            else:
-                res["status"] = "Failed"
-
-        data["results"] = results_list
-        data.setdefault("stats", {})
-        data["stats"]["passed"] = passed_count
-        data["stats"]["total"] = tc_count
-
-        return data
-
-    except requests.exceptions.Timeout:
-        return {"error": "Execution Timed Out (Server Limit)", "stats": {"passed": 0, "total": tc_count}, "results": []}
-    except Exception as e:
-        print(f"AWS Error: {e}")
-        return {"error": "Compiler Service Unavailable", "stats": {"passed": 0, "total": tc_count}, "results": []}
 @app.get("/api/v1/courses")
 async def get_courses(db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     if current_user.role == "instructor":
@@ -1622,8 +1258,8 @@ async def create_payment_order(
     current_user: models.User = Depends(get_current_user)
 ):
     # Razorpay client is sync, use thread
-    if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET or "replace_me" in str(RAZORPAY_KEY_ID) or "replace_me" in str(RAZORPAY_KEY_SECRET):
-        raise HTTPException(status_code=500, detail="Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend/.env")
+    if client is None or not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET or "your_razorpay" in str(RAZORPAY_KEY_ID) or "replace_me" in str(RAZORPAY_KEY_ID):
+        raise HTTPException(status_code=503, detail="Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend/.env")
 
     res = await db.execute(select(models.Course).where(models.Course.id == data.course_id))
     course = res.scalars().first()
@@ -1655,8 +1291,8 @@ async def verify_payment_and_unlock_course(
     db: AsyncSession = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    if not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET or "replace_me" in str(RAZORPAY_KEY_ID) or "replace_me" in str(RAZORPAY_KEY_SECRET):
-        raise HTTPException(status_code=500, detail="Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend/.env")
+    if client is None or not RAZORPAY_KEY_ID or not RAZORPAY_KEY_SECRET or "your_razorpay" in str(RAZORPAY_KEY_ID) or "replace_me" in str(RAZORPAY_KEY_ID):
+        raise HTTPException(status_code=503, detail="Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET in backend/.env")
 
     res = await db.execute(select(models.Course).where(models.Course.id == payload.course_id))
     course = res.scalars().first()
@@ -2047,29 +1683,10 @@ async def claim_course_certificate(course_id: int, db: AsyncSession = Depends(ge
 
     is_eligible = False
 
-    # --- LOGIC FOR CODING COURSE ---
-    if course.course_type == "coding":
-        # 1. Get Total Challenges Count
-        total_res = await db.execute(select(models.CourseChallenge).where(models.CourseChallenge.course_id == course_id))
-        total_challenges = len(total_res.scalars().all())
-
-        # 2. Get User Solved Count (Live Check from challenge_progress)
-        solved_res = await db.execute(
-            text("SELECT COUNT(*) FROM challenge_progress WHERE user_id = :uid AND challenge_id IN (SELECT id FROM course_challenges WHERE course_id = :cid)"), 
-            {"uid": current_user.id, "cid": course_id}
-        )
-        solved_count = solved_res.scalar()
-
-        if total_challenges > 0 and solved_count == total_challenges:
-            is_eligible = True
-        else:
-            return {"status": "error", "message": f"Incomplete: Solved {solved_count}/{total_challenges} problems. Complete all stages first."}
-
-    # --- LOGIC FOR STANDARD COURSE ---
-    else:
-        completed, total, is_done = await check_progress_status(current_user.id, course_id, db)
-        if is_done: is_eligible = True
-        else: return {"status": "error", "message": f"Incomplete: Finished {completed}/{total} lessons."}
+    # --- STANDARD PROGRESS CHECK ---
+    completed, total, is_done = await check_progress_status(current_user.id, course_id, db)
+    if is_done: is_eligible = True
+    else: return {"status": "error", "message": f"Incomplete: Finished {completed}/{total} lessons."}
 
     # --- GENERATE CERTIFICATE ---
     if is_eligible:
@@ -2079,66 +1696,6 @@ async def claim_course_certificate(course_id: int, db: AsyncSession = Depends(ge
     return {"status": "error", "message": "Requirements not met."}
 
  
-@app.get("/api/v1/courses/{course_id}/challenges")
-async def get_course_challenges(course_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):
-    # 1. Fetch Challenges Directly from DB
-    result = await db.execute(select(models.CourseChallenge).where(models.CourseChallenge.course_id == course_id))
-    challenges = result.scalars().all()
-    
-    challenges_data = []
-    for c in challenges:
-        challenges_data.append({
-            "id": c.id,
-            "title": c.title,
-            "description": c.description,
-            "difficulty": c.difficulty,
-            "test_cases": c.test_cases,
-            "course_id": c.course_id
-        })
-
-    # 2. Fetch User Progress
-    try:
-        solved_res = await db.execute(text("SELECT challenge_id FROM challenge_progress WHERE user_id = :uid"), {"uid": current_user.id})
-        solved_ids = {row[0] for row in solved_res.fetchall()}
-    except Exception as e:
-        solved_ids = set()
-
-    # 3. Merge
-    final_response = []
-    for challenge in challenges_data:
-        challenge["is_solved"] = challenge["id"] in solved_ids
-        final_response.append(challenge)
-
-    return final_response
-# 3️⃣ ADD CREATE CHALLENGE
-@app.post("/api/v1/courses/{course_id}/challenges")
-async def create_course_challenge(course_id: int, challenge: ChallengeCreate, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(require_instructor)):
-    new_challenge = models.CourseChallenge(
-        title=challenge.title,
-        description=challenge.description,
-        difficulty=challenge.difficulty,
-        test_cases=challenge.test_cases,
-        course_id=course_id
-    )
-    db.add(new_challenge)
-    await db.commit()
-    
-    return {"message": "Challenge added"}
-
-@app.post("/api/v1/login-otp")
-async def login_otp(req: OTPLoginRequest, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(models.User).where(models.User.phone_number == req.phone_number))
-    # ... logic continues
-    user = result.scalars().first()
-    
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found with this phone number")
-    
-    # 2. Since Firebase already verified the OTP on frontend, 
-    # we trust the request and issue a JWT
-    token = create_access_token(data={"sub": user.email, "role": user.role})
-    return {"access_token": token, "token_type": "bearer", "role": user.role}
-
 @app.post("/api/v1/proctoring/violation")
 async def record_violation(report: ViolationReport, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(require_student)):
     res = await db.execute(select(models.LessonProgress).where(models.LessonProgress.user_id == current_user.id, models.LessonProgress.content_item_id == report.lesson_id))
@@ -2317,67 +1874,6 @@ async def manual_backup(db: AsyncSession = Depends(get_db), current_user: models
         backup_manager.cleanup_old_backups()
         return {"message": "Backup triggered successfully!"}
     return {"message": "Backup failed."}
-
-@app.post("/api/v1/challenges/{challenge_id}/solve")
-async def mark_challenge_solved(challenge_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(require_student)):
-    # 1. Check if challenge exists
-    res = await db.execute(select(models.CourseChallenge).where(models.CourseChallenge.id == challenge_id))
-    challenge = res.scalars().first()
-    if not challenge:
-        raise HTTPException(status_code=404, detail="Challenge not found")
-
-    # 2. Insert into Progress Table (Idempotent)
-    try:
-        # We use ON CONFLICT DO NOTHING to avoid errors if they solve it twice
-        # Note: Ensure your DB has a UNIQUE constraint on (user_id, challenge_id)
-        # If not, use a SELECT check first.
-        
-        # Safe check logic just in case unique constraint isn't set:
-        check_res = await db.execute(text("SELECT 1 FROM challenge_progress WHERE user_id=:uid AND challenge_id=:cid"), {"uid": current_user.id, "cid": challenge_id})
-        if not check_res.first():
-            await db.execute(
-                text("INSERT INTO challenge_progress (user_id, challenge_id, is_solved, solved_at) VALUES (:uid, :cid, :solved, :time)"),
-                {"uid": current_user.id, "cid": challenge_id, "solved": True, "time": datetime.utcnow()}
-            )
-            await db.commit()
-    except Exception as e:
-        print(f"Error saving progress: {e}")
-        pass
-
-    return {"status": "success", "message": "Challenge marked as solved"}
-
-@app.patch("/api/v1/challenges/{challenge_id}")
-async def update_challenge(challenge_id: int, update: ChallengeUpdate, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(require_instructor)):
-    res = await db.execute(select(models.CourseChallenge).where(models.CourseChallenge.id == challenge_id))
-    challenge = res.scalars().first()
-    
-    if not challenge:
-        raise HTTPException(status_code=404, detail="Challenge not found")
-
-    if update.title: challenge.title = update.title
-    if update.description: challenge.description = update.description
-    if update.difficulty: challenge.difficulty = update.difficulty
-    if update.test_cases: challenge.test_cases = update.test_cases
-    
-    await db.commit()
-    
-    return {"message": "Challenge updated successfully"}
-
-@app.delete("/api/v1/challenges/{challenge_id}")
-async def delete_challenge(challenge_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(require_instructor)):
-    res = await db.execute(select(models.CourseChallenge).where(models.CourseChallenge.id == challenge_id))
-    challenge = res.scalars().first()
-    
-    if not challenge:
-        raise HTTPException(status_code=404, detail="Challenge not found")
-        
-    # Delete related progress first to avoid foreign key constraints
-    await db.execute(text("DELETE FROM challenge_progress WHERE challenge_id = :cid"), {"cid": challenge_id})
-    
-    await db.delete(challenge)
-    await db.commit()
-    
-    return {"message": "Challenge deleted"}
 
 @app.get("/api/v1/course-description-pdf/{course_id}")
 async def generate_course_description_pdf(course_id: int, db: AsyncSession = Depends(get_db), current_user: models.User = Depends(get_current_user)):

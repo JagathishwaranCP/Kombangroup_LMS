@@ -4,24 +4,28 @@ interface BrandLogoProps {
     size?: "sm" | "md" | "lg" | "xl";
     showTagline?: boolean;
     className?: string;
+    variant?: "default" | "light";
 }
 
-const BrandLogo: React.FC<BrandLogoProps> = ({ size = "md", showTagline = false, className = "" }) => {
-    const sizeClasses = {
-        sm: "text-lg",
-        md: "text-2xl",
-        lg: "text-4xl",
-        xl: "text-6xl",
+const BrandLogo: React.FC<BrandLogoProps> = ({ size = "md", showTagline = false, className = "", variant = "default" }) => {
+    const heightClasses = {
+        sm: "h-8",
+        md: "h-10",
+        lg: "h-14",
+        xl: "h-20",
     };
+
+    const taglineColor = variant === "light" ? "text-blue-200" : "text-[#5755D9]";
 
     return (
         <div className={`flex flex-col items-start leading-none ${className}`}>
-            <div className={`font-extrabold tracking-tight ${sizeClasses[size]} flex items-center uppercase`}>
-                <span className="text-[#0A0A0A]">KOM</span>
-                <span className="text-[#C09A2E]">BAN</span>
-            </div>
+            <img
+                src="/cloudconnekt-logo.png"
+                alt="CloudConnekt"
+                className={`${heightClasses[size]} w-auto object-contain`}
+            />
             {showTagline && (
-                <span className={`text-[#9A7B1F] font-semibold tracking-wider uppercase ${size === 'xl' ? 'text-sm mt-1' : 'text-[0.55rem] mt-0.5'}`}>
+                <span className={`${taglineColor} font-semibold tracking-wider uppercase ${size === "xl" ? "text-sm mt-2" : "text-[0.55rem] mt-1"}`}>
                     Learning Hub
                 </span>
             )}

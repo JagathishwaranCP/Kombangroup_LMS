@@ -14,12 +14,10 @@ import StudentDashboard from "./StudentDashboard";
 import CoursePlayer from "./CoursePlayer"; 
 import AddAdmits from "./AddAdmits"; 
 import CoursePreview from "./CoursePreview";
-import CodeArena from "./CodeArena"; 
 import Dashboard from "./Dashboard"; 
 import InstructorSettings from "./InstructorSettings"; 
 import StudentManagement from "./StudentManagement";
 import Messages from "./Messages";
-import CodingCourseManager from "./CodingCourseManager";
 import { clearSession, getValidSession } from "./utils/session";
 // --- Modified CourseList Component ---
 const CourseList = () => {
@@ -161,9 +159,8 @@ function App() {
           <Route path="course/:courseId/builder" element={<CourseBuilder />} />
           <Route path="assignments" element={<AssignmentManager />} />
           <Route path="add-admits" element={<AddAdmits />} />
-          <Route path="course/:courseId/preview" element={<CodingCourseManager />} />
+          <Route path="course/:courseId/preview" element={<CoursePreview />} />
           <Route path="course/:courseId/CoursePreview" element={<CoursePreview />} />
-          <Route path="code-arena" element={<CodeArena />} />
           <Route path="students" element={<StudentManagement />} />
           <Route path="settings" element={<InstructorSettings />} />
           <Route path="messages" element={<Messages />} />

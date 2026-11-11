@@ -8,8 +8,7 @@ const CreateCourse = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: "", description: "", price: "", image_url: "", duration: "",
-    course_type: "standard", language: "python"
+    title: "", description: "", price: "", image_url: "", duration: ""
   });
   const [toast, setToast] = useState({ show: false, message: "", type: "success" });
   const [isFree, setIsFree] = useState(false);
@@ -33,8 +32,8 @@ const CreateCourse = () => {
       description: finalDescription,
       price: isFree ? 0 : parseInt(formData.price),
       image_url: formData.image_url,
-      course_type: formData.course_type,
-      language: formData.course_type === "coding" ? formData.language : null
+      course_type: "standard",
+      language: null
     };
 
     try {
@@ -85,52 +84,6 @@ const CreateCourse = () => {
       {/* Main Form Card */}
       <div className="bg-[#F8FAFC] p-6 md:p-10 rounded-2xl border border-slate-200 shadow-sm">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6 md:gap-8">
-
-          {/* Select Course Type */}
-          <div className="bg-slate-100 p-5 md:p-6 rounded-xl">
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-3">Select Course Type</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div onClick={() => setFormData({ ...formData, course_type: "standard" })}
-                className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer border-2 transition-all ${formData.course_type === "standard" ? "bg-white border-[#0A0A0A] shadow-sm" : "bg-transparent border-slate-300 hover:border-slate-400"}`}>
-                <div className={`w-5 h-5 min-w-[20px] rounded-full border-2 border-slate-300 ${formData.course_type === "standard" ? "bg-[#0A0A0A] border-[#0A0A0A]" : "bg-transparent"}`} />
-                <div>
-                  <div className="font-bold text-[#1e293b]">Standard Course</div>
-                  <div className="text-xs text-slate-500 mt-1">Video, PDF, Quizzes & Assignments</div>
-                </div>
-              </div>
-
-              <div onClick={() => setFormData({ ...formData, course_type: "coding" })}
-                className={`flex items-start gap-3 p-4 rounded-xl cursor-pointer border-2 transition-all ${formData.course_type === "coding" ? "bg-white border-[#10b981] shadow-sm" : "bg-transparent border-slate-300 hover:border-slate-400"}`}>
-                <div className={`w-5 h-5 min-w-[20px] rounded-full border-2 border-slate-300 ${formData.course_type === "coding" ? "bg-[#10b981] border-[#10b981]" : "bg-transparent"}`} />
-                <div>
-                  <div className="font-bold text-[#1e293b]">Coding Course</div>
-                  <div className="text-xs text-slate-500 mt-1">Practice Problems with Compiler</div>
-                </div>
-              </div>
-            </div>
-
-            {/* SHOW LANGUAGE ONLY IF CODING COURSE */}
-            {formData.course_type === "coding" && (
-              <div className="mt-5 animate-fade-in">
-                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Programming Language</label>
-                <div className="relative">
-                  <select
-                    value={formData.language}
-                    onChange={(e) => setFormData({ ...formData, language: e.target.value })}
-                    className="w-full p-3 pl-4 text-sm rounded-lg border border-slate-300 bg-white outline-none focus:border-[#10b981] focus:ring-1 focus:ring-[#10b981] transition-all appearance-none"
-                  >
-                    <option value="python">Python (3.8.1)</option>
-                    <option value="java">Java (OpenJDK 13)</option>
-                    <option value="cpp">C++ (GCC 9.2)</option>
-                    <option value="javascript">JavaScript (Node.js)</option>
-                  </select>
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-slate-500">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M6 9l6 6 6-6" /></svg>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
 
           <div>
             <label className="block text-xs font-bold text-slate-700 uppercase tracking-wide mb-2">Course Title</label>

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, BookOpen, UserPlus, PlusCircle, LogOut, Bell,
-  ChevronRight, Code, Menu, Settings, Users, FolderOpen, MessageSquare // ✅ Added FolderOpen Icon
+  ChevronRight, Menu, Settings, Users, FolderOpen, MessageSquare
 } from "lucide-react";
 import BrandLogo from "./components/BrandLogo";
 import { clearSession } from "./utils/session";
@@ -15,13 +15,12 @@ const DashboardLayout = () => {
 
   // ✅ Profile Dropdown State
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const instructorData = { name: "Instructor", email: "instructor@komban.com" };
+  const instructorData = { name: "Instructor", email: "instructor@cloudconnekt.com" };
 
   const menuItems = [
     { label: "Home", path: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { label: "My Courses", path: "/dashboard/courses", icon: <BookOpen size={20} /> },
     { label: "Create Course", path: "/dashboard/create-course", icon: <PlusCircle size={20} /> },
-    { label: "Code Arena", path: "/dashboard/code-arena", icon: <Code size={20} /> },
     { label: "Add Admits", path: "/dashboard/add-admits", icon: <UserPlus size={20} /> },
     { label: "Students", path: "/dashboard/students", icon: <Users size={20} /> },
     // ✅ NEW: Assignment Verification Link
@@ -58,7 +57,7 @@ const DashboardLayout = () => {
           {(!collapsed || mobileMenuOpen) && (
             <div>
               <BrandLogo size="md" />
-              <span className="text-[11px] text-[#C09A2E] font-bold uppercase tracking-widest block mt-1">
+              <span className="text-[11px] text-[#5755D9] font-bold uppercase tracking-widest block mt-1">
                 Instructor
               </span>
             </div>

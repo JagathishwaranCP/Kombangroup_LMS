@@ -1,24 +1,16 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Editor from "@monaco-editor/react";
 import API_BASE_URL from './config';
-import { runTestCasesLocally } from './utils/pyodideEnv';
 import {
     LayoutDashboard, BookOpen, Compass, Award, LogOut,
     CheckCircle, AlertTriangle, X,
-    Code, Play, Monitor, ChevronRight, Cloud,
-    Menu, Sparkles, Zap, User, PlayCircle, Trophy, Lock, BellRing, Trash2, Settings, Download, Clock
+    ChevronRight,
+    Menu, Sparkles, Zap, User, PlayCircle, Lock, BellRing, Trash2, Download, Clock, Mail, Phone
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-// ✅ AI IMPORTS 
-import * as tf from "@tensorflow/tfjs";
-import * as blazeface from "@tensorflow-models/blazeface";
-
-import "@tensorflow/tfjs-backend-webgl";
 import BrandLogo from "./components/BrandLogo";
-import { CODE_TEMPLATES } from './utils/codeTemplates';
 import { clearSession, getValidSession } from "./utils/session";
 
 // --- TYPES ---
@@ -30,14 +22,12 @@ interface Course {
     image_url: string;
     instructor_id: number;
     // ✅ Updated Fields
-    course_type?: string; // "standard" | "coding"
+    course_type?: string;
     enrollment_type?: "paid" | "trial";
     days_left?: number;
     is_trial_expired?: boolean;
     has_certificate?: boolean;
 }
-
-interface CodeTest { id: number; title: string; time_limit: number; problems: any[]; completed?: boolean; }
 
 // --- RAZORPAY SCRIPT LOADER ---
 const loadRazorpayScript = () => {
@@ -174,9 +164,6 @@ const StudentDashboard = () => {
     const RAZORPAY_PAYLINK_URL = import.meta.env.VITE_RAZORPAY_PAYLINK_URL;
     const [activeTab, setActiveTab] = useState("home");
 
-    // ✅ NEW: Sub-tab for My Learning (Standard vs Coding)
-    const [learningSubTab, setLearningSubTab] = useState("standard");
-
     const [availableCourses, setAvailableCourses] = useState<Course[]>([]);
     const [enrolledCourses, setEnrolledCourses] = useState<Course[]>([]);
     const [loading, setLoading] = useState(true);
@@ -185,7 +172,7 @@ const StudentDashboard = () => {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [studentProfile, setStudentProfile] = useState({ name: "Loading...", email: "..." });
+    const [studentProfile, setStudentProfile] = useState({ name: "Loading...", email: "...", phone: "" });
     const [newPassword, setNewPassword] = useState("");
     // ✅ MOVED: Mobile Menu State (Must be before conditional returns)
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -197,42 +184,10 @@ const StudentDashboard = () => {
         show: false, message: "", type: "success"
     });
 
-    // --- CODE ARENA STATES ---
-    const [codeTests, setCodeTests] = useState<CodeTest[]>([]);
-    const [activeTest, setActiveTest] = useState<CodeTest | null>(null);
-    const [passKeyInput, setPassKeyInput] = useState("");
-    const [showPassKeyModal, setShowPassKeyModal] = useState<number | null>(null);
-
-    // --- 🛡️ PROCTORING STATES ---
-    const [, setTimeLeft] = useState(0);
-    const [warnings, setWarnings] = useState(0);
-    const [faceStatus, setFaceStatus] = useState<"ok" | "missing" | "multiple">("ok");
-    const [isFullScreenViolation, setIsFullScreenViolation] = useState(false);
-
-    // Problem & Code State
-    const [currentProblemIndex, setCurrentProblemIndex] = useState(0);
-    const [solutions, setSolutions] = useState<{ [key: number]: string }>({});
-    const [userCode, setUserCode] = useState(CODE_TEMPLATES.python);
-    const [language, setLanguage] = useState(71);
-
-    const [consoleOutput, setConsoleOutput] = useState("Ready to execute...");
-    const [executionStatus, setExecutionStatus] = useState("idle");
-    // ✅ NEW: Strict "Unlock Submit" State
-    const [canSubmit, setCanSubmit] = useState(false);
-
-    const videoRef = useRef<HTMLVideoElement>(null);
-
     // 🎨 PROFESSIONAL THEME PALETTE
     const brand = {
         brandPrimary: "#0A0A0A", brandAccent: "#C09A2E", mainBg: "#E2E8F0", cardBg: "#F8FAFC", border: "#cbd5e1", textMain: "#1e293b", textLight: "#64748b"
     };
-
-    const languages = [
-        { id: 71, name: "Python (3.8.1)", value: "python" },
-        { id: 62, name: "Java (OpenJDK 13)", value: "java" },
-        { id: 54, name: "C++ (GCC 9.2.0)", value: "cpp" },
-        { id: 63, name: "JavaScript (Node.js)", value: "javascript" },
-    ];
 
     // ✅ Toast Helper
     const triggerToast = (message: string, type: "success" | "error" = "success") => {
@@ -248,8 +203,9 @@ const StudentDashboard = () => {
             const token = localStorage.getItem("token");
             const res = await axios.get(`${API_BASE_URL}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
             setStudentProfile({
-                name: res.data.full_name,
-                email: res.data.email
+                name: res.data.full_name || "Student",
+                email: res.data.email || "",
+                phone: res.data.phone_number || ""
             });
         } catch (e) { console.error("Profile fetch error", e); }
     };
@@ -313,21 +269,11 @@ const StudentDashboard = () => {
         }
     };
 
-    const fetchCodeTests = async () => {
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) return;
-            const res = await axios.get(`${API_BASE_URL}/code-tests`, { headers: { Authorization: `Bearer ${token}` } });
-            setCodeTests(Array.isArray(res.data) ? res.data : []);
-        } catch (err) { console.error(err); }
-    };
-
     useEffect(() => {
         const session = getValidSession();
         if (!session) { navigate("/login"); return; }
         if (session.role === "instructor") { navigate("/dashboard"); return; }
         fetchData();
-        fetchCodeTests();
         fetchProfile();
     }, []);
 
@@ -361,342 +307,6 @@ const StudentDashboard = () => {
                 [courseId]: { percent, completed, total: totalLessons }
             }));
         } catch (err) { console.error("Failed to fetch progress", err); }
-    };
-
-    // 🛡️ LMS PROCTORING LOGIC
-    useEffect(() => {
-        let aiInterval: any;
-        if (activeTest) {
-            const savedWarns = localStorage.getItem(`warns_${activeTest.id}`);
-            if (savedWarns) setWarnings(parseInt(savedWarns));
-            const savedSolutions = localStorage.getItem(`sols_${activeTest.id}`);
-            if (savedSolutions) {
-                const parsed = JSON.parse(savedSolutions);
-                setSolutions(parsed);
-                setUserCode(parsed[0] || CODE_TEMPLATES.python);
-            } else setUserCode(CODE_TEMPLATES.python);
-
-            const timer = setInterval(() => {
-                setTimeLeft(prev => { if (prev <= 1) { submitTest(); return 0; } return prev - 1; });
-            }, 1000);
-
-            const triggerViolation = (type: string) => {
-                const currentCount = parseInt(localStorage.getItem(`warns_${activeTest.id}`) || "0") + 1;
-                localStorage.setItem(`warns_${activeTest.id}`, currentCount.toString());
-                setWarnings(currentCount);
-
-                if (currentCount > 2) {
-                    submitTest(true);
-                    triggerToast(`⛔ TEST TERMINATED: ${type}`, "error");
-                }
-            };
-
-            const handleFullScreenChange = () => {
-                if (!document.fullscreenElement) {
-                    setIsFullScreenViolation(true);
-                    triggerViolation("Full Screen Exited");
-                } else {
-                    setIsFullScreenViolation(false);
-                }
-            };
-
-            const handleVisibilityChange = () => {
-                if (document.hidden) triggerViolation("Tab Switch Detected");
-            };
-
-            document.addEventListener("fullscreenchange", handleFullScreenChange);
-            document.addEventListener("visibilitychange", handleVisibilityChange);
-
-            const setupAI = async () => {
-                try {
-                    await tf.setBackend('webgl');
-                    const loadedModel = await blazeface.load();
-                    if (navigator.mediaDevices.getUserMedia) {
-                        const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                        if (videoRef.current) {
-                            videoRef.current.srcObject = stream;
-                            videoRef.current.onloadeddata = () => {
-                                aiInterval = setInterval(async () => {
-                                    if (videoRef.current && videoRef.current.readyState === 4) {
-                                        const predictions = await loadedModel.estimateFaces(videoRef.current, false);
-                                        if (predictions.length === 0) setFaceStatus("missing");
-                                        else if (predictions.length > 1) setFaceStatus("multiple");
-                                        else setFaceStatus("ok");
-                                    }
-                                }, 1000);
-                            };
-                        }
-                    }
-                } catch (err) { }
-            };
-            setupAI();
-
-            return () => {
-                clearInterval(timer); clearInterval(aiInterval);
-                document.removeEventListener("fullscreenchange", handleFullScreenChange);
-                document.removeEventListener("visibilitychange", handleVisibilityChange);
-                if (videoRef.current?.srcObject) (videoRef.current.srcObject as MediaStream).getTracks().forEach(t => t.stop());
-            };
-        }
-    }, [activeTest]);
-
-    const handleStartTest = async () => {
-        const token = localStorage.getItem("token");
-        try {
-            if (document.documentElement.requestFullscreen) await document.documentElement.requestFullscreen().catch(() => { });
-            const formData = new FormData(); formData.append("pass_key", passKeyInput);
-            const res = await axios.post(`${API_BASE_URL}/code-tests/${showPassKeyModal}/start`, formData, { headers: { Authorization: `Bearer ${token}` } });
-            const prevWarns = localStorage.getItem(`warns_${res.data.id}`);
-            if (prevWarns && parseInt(prevWarns) > 2) {
-                if (document.fullscreenElement) document.exitFullscreen();
-                triggerToast("Test Terminated Previously", "error"); return;
-            }
-            setActiveTest(res.data); setTimeLeft(res.data.time_limit * 60); setShowPassKeyModal(null); setWarnings(prevWarns ? parseInt(prevWarns) : 0);
-        } catch (err) {
-            if (document.fullscreenElement) document.exitFullscreen();
-            triggerToast("Invalid Pass Key", "error");
-        }
-    };
-
-    const returnToFullScreen = async () => {
-        try {
-            if (document.documentElement.requestFullscreen) {
-                await document.documentElement.requestFullscreen();
-                setIsFullScreenViolation(false);
-            }
-        } catch (e) { console.log(e); }
-    };
-
-    const handleSave = () => {
-        if (!activeTest) return;
-        const newSolutions = { ...solutions, [currentProblemIndex]: userCode };
-        setSolutions(newSolutions);
-        localStorage.setItem(`sols_${activeTest.id}`, JSON.stringify(newSolutions));
-        triggerToast("✅ Code Saved!", "success");
-    };
-
-    // ✅ UPDATED EXECUTION LOGIC (Batch Mode)
-    const handleRunCode = async () => {
-        setExecutionStatus("running");
-        setConsoleOutput("Processing...");
-        setCanSubmit(false); // Reset permission
-
-        const currentProb = activeTest?.problems[currentProblemIndex];
-        let allCases: any[] = [];
-        try {
-            allCases = currentProb ? JSON.parse(currentProb.test_cases) : [];
-        } catch (e) { allCases = []; }
-
-        if (allCases.length === 0) {
-            setConsoleOutput("⚠️ No test cases found.");
-            setExecutionStatus("error");
-            return;
-        }
-
-        // Dry-run uses only non-hidden cases (official grading still uses full suite on submit)
-        const dryRunCases = allCases.filter((c) => !c.hidden);
-        const casesForDryRun = dryRunCases.length > 0 ? dryRunCases : allCases;
-
-        // 🟢 CASE 1: PYTHON (Run Locally with Strict Test Cases)
-        if (language === 71) {
-            setConsoleOutput("🔹 Running Local Tests (Pyodide)...");
-            // Use the strict test runner
-            const localRes = await runTestCasesLocally(userCode, casesForDryRun);
-
-            if (localRes.success) {
-                setExecutionStatus("success");
-                setConsoleOutput(localRes.output); // Detailed output from runner
-                triggerToast("All Local Tests Passed!", "success");
-                setCanSubmit(true); // ✅ Unlock Submit
-            } else {
-                setExecutionStatus("error");
-                setConsoleOutput(`❌ Execution Failed:\n${localRes.error || localRes.output}`);
-                triggerToast("Tests Failed", "error");
-            }
-            return; // Stop here
-        }
-
-        if (!activeTest || !currentProb) {
-            setExecutionStatus("error");
-            setConsoleOutput("⚠️ Missing problem data.");
-            return;
-        }
-
-        // 🔴 CASE 2: C++ / JAVA (Run on Server — dry run uses server-resolved public cases when possible)
-        setConsoleOutput("🚀 specific language test on Server...");
-
-        try {
-            const res = await axios.post(`${API_BASE_URL}/execute`,
-                {
-                    source_code: userCode,
-                    language_id: language,
-                    test_cases: [],
-                    code_test_id: activeTest.id,
-                    problem_id: currentProb.id,
-                    execution_mode: "dry_run",
-                },
-                { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-            );
-
-            const report = res.data;
-            if (typeof report === "string") {
-                setExecutionStatus("error");
-                setConsoleOutput(`❌ Server Error:\n${report}`);
-                return;
-            }
-            if (report.error) {
-                setExecutionStatus("error");
-                const hint = report.detail ? `\n\nDetail: ${report.detail}` : "";
-                setConsoleOutput(`❌ Server Error: ${report.error}${hint}`);
-                return;
-            }
-
-            // Check if passed/failed matching consistent strict logic
-            const passed = report.stats?.passed ?? 0;
-            const total = report.stats?.total ?? 0;
-
-            if (total === 0) {
-                setExecutionStatus("error");
-                setConsoleOutput(
-                    "❌ Compiler returned no usable test summary (0/0).\n\n" +
-                    "Ensure your Lambda returns JSON with `results` and `stats` for each run."
-                );
-                return;
-            }
-
-            let outputStr = `✨ Dry Run Complete!\nPassed: ${passed}/${total}\nRuntime: ${report.stats?.runtime_ms ?? "—"}ms\n\n`;
-
-            // Append Details
-            (report.results || []).forEach((r: any) => {
-                const idx = typeof r?.id === "number" ? r.id + 1 : "?";
-                outputStr += `${r.status === "Passed" ? "✅" : "❌"} Case ${idx}: ${r.status}\n`;
-                if (r.status !== "Passed") {
-                    outputStr += `   Input: ${r.input ?? r.stdin}\n   Expected: ${r.expected ?? r.output}\n   Actual: ${r.actual}\n\n`;
-                }
-            });
-
-            setConsoleOutput(outputStr);
-
-            if (passed === total) {
-                setExecutionStatus("success");
-                triggerToast("All Tests Passed!", "success");
-                setCanSubmit(true); // ✅ Unlock Submit
-            } else {
-                setExecutionStatus("error");
-                triggerToast("Tests Failed", "error");
-            }
-
-        } catch (err: any) {
-            setExecutionStatus("error");
-            setConsoleOutput("❌ server error: " + (err.response?.data?.error || err.message));
-        }
-    };
-
-    // ✅ NEW: SUBMIT FUNCTION (Official Grading)
-    const handleSubmit = async () => {
-        if (!canSubmit) {
-            triggerToast("Please successfully RUN your code before submitting.", "error");
-            return;
-        }
-
-        setExecutionStatus("running");
-        setConsoleOutput("🚀 Submitting to Official Grader...");
-
-        const currentProb = activeTest?.problems[currentProblemIndex];
-        if (!activeTest || !currentProb) {
-            triggerToast("No active problem.", "error");
-            return;
-        }
-
-        try {
-            // Grading uses canonical cases from the backend (includes hidden tests)
-            const res = await axios.post(`${API_BASE_URL}/execute`,
-                {
-                    source_code: userCode,
-                    language_id: language,
-                    test_cases: [],
-                    code_test_id: activeTest.id,
-                    problem_id: currentProb.id,
-                },
-                { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
-            );
-
-            const report = res.data;
-
-            if (typeof report === "string") {
-                setExecutionStatus("error");
-                setConsoleOutput(`❌ SERVER ERROR:\n${report}`);
-                triggerToast("Compiler returned invalid response", "error");
-                return;
-            }
-
-            if (report.error) {
-                setExecutionStatus("error");
-                const hint = report.detail ? `\n\nDetail: ${report.detail}` : "";
-                setConsoleOutput(`❌ SERVER ERROR:\n${report.error}${hint}`);
-                triggerToast("Compiler error", "error");
-                return;
-            }
-
-            // Check PASS/FAIL logic
-            const passedCount = report.stats?.passed ?? 0;
-            const totalCount = report.stats?.total ?? 0;
-
-            if (totalCount === 0) {
-                setExecutionStatus("error");
-                setConsoleOutput(
-                    "❌ The compiler did not report any test results (0/0).\n\n" +
-                    "Your Lambda must return JSON like: { \"stats\": { \"passed\": n, \"total\": n, \"runtime_ms\": n }, \"results\": [ { \"input\", \"expected\", \"actual\", \"status\" } ] }.\n" +
-                    "A plain string response (e.g. \"Hello from Lambda!\") will not work for Code Arena."
-                );
-                triggerToast("Invalid compiler response", "error");
-                return;
-            }
-
-            // 🚨 STRICT SUCCESS VALIDATION
-            if (passedCount === totalCount) {
-                setExecutionStatus("success");
-                setConsoleOutput(`🎉 Challenge Solved! All ${totalCount} test cases passed.\n\nRuntime: ${report.stats?.runtime_ms ?? "—"}ms`);
-                triggerToast("🎉 Challenge Solved!", "success");
-
-                // ✅ ONLY SAVE PROGRESS HERE
-                handleSave();
-            } else {
-                setExecutionStatus("error");
-                const fail = (report.results as any[])?.find((r: any) => r && r.status !== "Passed");
-                const fin = fail?.input ?? fail?.stdin ?? "(hidden or n/a)";
-                const fexp = fail?.expected ?? fail?.output ?? "(n/a)";
-                const fact = fail?.actual ?? "(n/a)";
-                setConsoleOutput(`❌ Test cases failed (${passedCount}/${totalCount} passed).\n\nFirst failure:\nInput: ${fin}\nExpected: ${fexp}\nActual: ${fact}`);
-                triggerToast("Some tests failed", "error");
-            }
-        } catch (err: any) {
-            setExecutionStatus("error");
-            setConsoleOutput("❌ System Error: " + (err.response?.data?.error || err.message));
-        }
-    };
-
-
-    const switchQuestion = (index: number) => {
-        handleSave();
-        setCanSubmit(false); // ✅ Reset permission on switch
-        setCurrentProblemIndex(index);
-        setUserCode(solutions[index] || CODE_TEMPLATES.python);
-        setConsoleOutput("Ready...");
-        setExecutionStatus("idle");
-    };
-
-    const submitTest = async (disqualified = false) => {
-        if (!activeTest) return;
-        try {
-            await axios.post(`${API_BASE_URL}/code-tests/submit`, {
-                test_id: activeTest.id, score: disqualified ? 0 : (executionStatus === "success" ? 100 : 40),
-                problems_solved: Object.keys(solutions).length, time_taken: "Finished"
-            }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
-            setActiveTest(null); localStorage.removeItem(`sols_${activeTest.id}`);
-            if (document.fullscreenElement) document.exitFullscreen();
-            triggerToast(disqualified ? "Test Terminated." : "Test Submitted Successfully!", disqualified ? "error" : "success");
-        } catch (err) { }
     };
 
     const handleFreeEnroll = async (courseId: number) => {
@@ -803,91 +413,6 @@ const StudentDashboard = () => {
     const openEnrollModal = (course: Course) => { setSelectedCourse(course); setShowModal(true); };
     const handleLogout = () => { clearSession(); navigate("/"); };
 
-    // --- ⚔️ THE REAL CODE ARENA VIEW ---
-    if (activeTest) {
-        return (
-            <div className="flex flex-col lg:flex-row h-screen bg-[#F8FAFC] font-sans overflow-hidden relative">
-                {isFullScreenViolation && (
-                    <div className="fixed inset-0 z-[9999] bg-[#0f172a] flex flex-col items-center justify-center text-center p-6">
-                        <div className="mb-6"><AlertTriangle size={60} className="text-red-500 mx-auto mb-4" /></div>
-                        <h1 className="text-2xl lg:text-4xl font-extrabold text-white tracking-widest mb-4">TEST INTERRUPTED</h1>
-                        <p className="text-slate-400 text-sm lg:text-lg max-w-lg mb-2">You have exited full-screen mode. This is a proctoring violation.</p>
-                        <div className="bg-white/10 px-8 py-3 rounded-lg border border-red-500/30 mb-8"><span className="text-red-400 font-bold text-lg tracking-wider">Remaining Warnings: {Math.max(0, 3 - warnings)}</span></div>
-                        <button onClick={returnToFullScreen} className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 lg:px-8 lg:py-4 rounded font-bold text-sm lg:text-lg tracking-wider flex items-center gap-2"><Monitor size={20} /> RETURN TO FULL SCREEN</button>
-                    </div>
-                )}
-
-                {/* LEFT PANEL: Question & Cam */}
-                <div className="w-full lg:w-[35%] h-[40%] lg:h-full flex flex-col border-b lg:border-b-0 lg:border-r border-slate-300 bg-white shadow-lg z-10">
-                    <div className="h-12 lg:h-16 border-b border-slate-200 flex items-center px-4 lg:px-6 bg-white shrink-0">
-                        <h3 className="text-lg lg:text-2xl font-extrabold text-slate-800 truncate">problem {currentProblemIndex + 1}</h3>
-                        <span className="ml-auto bg-yellow-100 text-yellow-700 text-[10px] lg:text-xs font-bold px-2 py-1 rounded">MEDIUM</span>
-                    </div>
-                    <div className="flex-1 overflow-y-auto p-4 lg:p-6 bg-white">
-                        <p className="text-slate-500 mb-6 italic">No description provided.</p>
-                        {activeTest.problems[currentProblemIndex]?.description && <div className="prose prose-sm text-slate-600 mb-6">{activeTest.problems[currentProblemIndex].description}</div>}
-                        <h4 className="font-extrabold text-slate-900 mb-4 text-xs lg:text-sm uppercase tracking-wide">TEST CASES</h4>
-                        <div className="space-y-2">{JSON.parse(activeTest.problems[currentProblemIndex]?.test_cases || "[]").filter((tc: any) => !tc.hidden).map((tc: any, i: number) => (<div key={i} className="bg-slate-50 border border-slate-200 p-2 lg:p-3 rounded text-xs lg:text-sm"><span className="font-mono font-bold block">Input: {tc.input}</span></div>))}</div>
-                    </div>
-
-                    {/* Camera View - Smaller on Mobile */}
-                    <div className="h-32 lg:h-56 bg-slate-100 border-t border-slate-300 p-2 lg:p-4 relative flex items-center justify-center overflow-hidden shrink-0">
-                        <video ref={videoRef} autoPlay muted className="w-full h-full object-cover rounded-lg border-2 border-slate-300 bg-black" />
-                        <div className="absolute top-4 left-4 lg:top-6 lg:left-6 bg-red-600 text-white text-[10px] font-bold px-2 py-0.5 rounded flex items-center gap-1"><div className="w-2 h-2 rounded-full bg-white animate-pulse"></div> REC</div>
-                        {faceStatus !== "ok" && <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10"><span className="text-red-400 font-bold bg-black px-2 py-1 rounded border border-red-500 text-xs lg:text-sm">FACE MISSING</span></div>}
-                    </div>
-                </div>
-
-                {/* RIGHT PANEL: Editor & Terminal */}
-                <div className="w-full lg:w-[65%] h-[60%] lg:h-full flex flex-col bg-[#F3F4F6]">
-                    <div className="h-10 lg:h-12 bg-white border-b border-slate-200 flex items-center justify-between px-2 lg:px-4 shrink-0">
-                        <span className="text-[10px] lg:text-xs font-bold text-slate-400 uppercase flex items-center gap-2"><Code size={14} /> Code Editor</span>
-                        <select value={language} onChange={(e) => {
-                            const newLangId = Number(e.target.value);
-                            setLanguage(newLangId);
-                            const template = newLangId === 71 ? CODE_TEMPLATES.python : (newLangId === 62 ? CODE_TEMPLATES.java : CODE_TEMPLATES.cpp);
-                            setUserCode(template);
-                        }} className="text-[10px] lg:text-xs border border-slate-300 rounded px-2 py-1 bg-white font-bold text-slate-700">
-                            {languages.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex-1 bg-white relative">
-                        <Editor height="100%" theme="light" language={languages.find(l => l.id === language)?.value} value={userCode} onChange={(val) => setUserCode(val || "")} options={{ fontSize: 14, minimap: { enabled: false }, scrollBeyondLastLine: false, fontFamily: "'JetBrains Mono', monospace", padding: { top: 16 }, lineNumbers: "on" }} />
-                    </div>
-
-                    {/* Terminal - Smaller on mobile */}
-                    <div className="h-24 lg:h-32 bg-[#0F172A] border-t border-slate-700 text-slate-300 p-2 lg:p-3 font-mono text-[10px] lg:text-xs overflow-y-auto flex flex-col shrink-0">
-                        <div className="flex items-center gap-2 text-slate-500 font-bold uppercase text-[10px] mb-2 border-b border-slate-700 pb-1"><Monitor size={12} /> Terminal Output</div>
-                        <pre className={`whitespace-pre-wrap flex-1 ${executionStatus === "error" ? "text-red-400" : "text-green-400"}`}>{executionStatus === "running" ? <span className="text-yellow-400">Compiling...</span> : consoleOutput}</pre>
-                    </div>
-
-                    <div className="h-14 lg:h-16 bg-white border-t border-slate-200 flex items-center justify-end px-4 lg:px-6 gap-2 lg:gap-4 shrink-0">
-                        <button onClick={() => switchQuestion(currentProblemIndex + 1 < activeTest.problems.length ? currentProblemIndex + 1 : 0)} className="flex items-center gap-2 px-4 py-2 lg:px-6 lg:py-2.5 rounded-lg border border-slate-300 text-slate-700 font-bold text-xs lg:text-sm hover:bg-slate-50 transition-colors"><ChevronRight size={14} className="lg:w-4 lg:h-4" /> <span className="hidden sm:inline">Next</span></button>
-
-                        {/* 🟢 Run Code (Dry Run) */}
-                        <button onClick={handleRunCode} disabled={executionStatus === "running"} className="flex items-center gap-2 px-4 py-2 lg:px-6 lg:py-2.5 rounded-lg bg-slate-200 text-slate-700 font-bold text-xs lg:text-sm hover:bg-slate-300 transition-colors"><Play size={14} fill="currentColor" className="lg:w-4 lg:h-4" /> Run Code</button>
-
-                        {/* 🔵 Submit (Official Grading) */}
-                        <button
-                            onClick={handleSubmit}
-                            disabled={executionStatus === "running" || !canSubmit}
-                            title={!canSubmit ? "Run code successfully first" : "Submit solution"}
-                            className={`flex items-center gap-2 px-4 py-2 lg:px-8 lg:py-2.5 rounded-lg border font-bold text-xs lg:text-sm shadow-md transition-all
-                            ${canSubmit
-                                    ? "bg-[#0A0A0A] text-white hover:bg-blue-700 border-transparent"
-                                    : "bg-slate-200 text-slate-400 border-slate-300 cursor-not-allowed"
-                                }`}
-                        >
-                            <Cloud size={14} className="lg:w-4 lg:h-4" /> Submit
-                        </button>
-                    </div>
-                </div>
-
-                {toast.show && <div className={`fixed top-5 right-5 z-[10000] px-6 py-3 rounded-lg shadow-xl text-white font-bold flex items-center gap-3 animate-bounce ${toast.type === "success" ? "bg-green-500" : "bg-red-500"}`}>{toast.type === "success" ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}{toast.message}</div>}
-            </div>
-        );
-    }
-
     // ✅ LOADING SPINNER UI
     if (loading) {
         return (
@@ -921,7 +446,6 @@ const StudentDashboard = () => {
                 <nav className="hidden lg:flex items-center gap-2">
                     <NavItem icon={<LayoutDashboard size={18} />} label="Home" active={activeTab === "home"} onClick={() => setActiveTab("home")} />
                     <NavItem icon={<BookOpen size={18} />} label="My Learning" active={activeTab === "learning"} onClick={() => setActiveTab("learning")} />
-                    <NavItem icon={<Code size={18} />} label="Code Test" active={activeTab === "test"} onClick={() => setActiveTab("test")} />
                     <NavItem icon={<Compass size={18} />} label="Explore" active={activeTab === "explore"} onClick={() => setActiveTab("explore")} />
                     <NavItem icon={<Award size={18} />} label="Certificates" active={activeTab === "certificates"} onClick={() => setActiveTab("certificates")} />
                 </nav>
@@ -953,9 +477,12 @@ const StudentDashboard = () => {
                                 <div className="mb-3 border-b border-slate-100 pb-3">
                                     <p className="font-bold text-slate-800 truncate">{studentProfile.name}</p>
                                     <p className="text-xs text-slate-500 truncate">{studentProfile.email}</p>
+                                    {studentProfile.phone && (
+                                        <p className="text-xs text-slate-400 truncate mt-0.5">{studentProfile.phone}</p>
+                                    )}
                                 </div>
-                                <button onClick={() => { setActiveTab("settings"); setShowProfileMenu(false); }} className="flex items-center gap-3 w-full p-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-[#0A0A0A] text-sm font-bold mb-1 transition-colors">
-                                    <Settings size={16} /> Settings
+                                <button onClick={() => { setActiveTab("profile"); setShowProfileMenu(false); }} className="flex items-center gap-3 w-full p-2 rounded-lg text-slate-600 hover:bg-slate-50 hover:text-[#0A0A0A] text-sm font-bold mb-1 transition-colors">
+                                    <User size={16} /> Profile
                                 </button>
                                 <button onClick={handleLogout} className="flex items-center gap-3 w-full p-2 rounded-lg text-red-500 hover:bg-red-50 text-sm font-bold transition-colors">
                                     <LogOut size={16} /> Logout
@@ -994,7 +521,6 @@ const StudentDashboard = () => {
                         <nav className="flex flex-col gap-2">
                             <NavItem icon={<LayoutDashboard size={20} />} label="Home" active={activeTab === "home"} onClick={() => { setActiveTab("home"); setIsMobileMenuOpen(false); }} />
                             <NavItem icon={<BookOpen size={20} />} label="My Learning" active={activeTab === "learning"} onClick={() => { setActiveTab("learning"); setIsMobileMenuOpen(false); }} />
-                            <NavItem icon={<Code size={20} />} label="Code Test" active={activeTab === "test"} onClick={() => { setActiveTab("test"); setIsMobileMenuOpen(false); }} />
                             <NavItem icon={<Compass size={20} />} label="Explore" active={activeTab === "explore"} onClick={() => { setActiveTab("explore"); setIsMobileMenuOpen(false); }} />
                             <NavItem icon={<Award size={20} />} label="Certificates" active={activeTab === "certificates"} onClick={() => { setActiveTab("certificates"); setIsMobileMenuOpen(false); }} />
                         </nav>
@@ -1017,10 +543,9 @@ const StudentDashboard = () => {
                         {activeTab === "home" && "Dashboard Overview"}
                         {activeTab === "learning" && "My Learning"}
                         {activeTab === "explore" && "Explore Courses"}
-                        {activeTab === "test" && "Coding Arena"}
                         {activeTab === "certificates" && "My Achievements"}
                         {activeTab === "notifications" && "Notifications"}
-                        {activeTab === "settings" && "Account Settings"}
+                        {activeTab === "profile" && "My Profile"}
                     </h2>
                     <p className="text-slate-500 font-medium">Welcome to your student portal</p>
                 </div>
@@ -1054,7 +579,7 @@ const StudentDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <StatCard icon={BookOpen} label="Courses Enrolled" value={enrolledCourses.length} />
                             <StatCard icon={Award} label="Certificates Earned" value={0} />
-                            <StatCard icon={Trophy} label="Challenges Attended" value={codeTests.filter(t => t.completed).length} />
+                            <StatCard icon={CheckCircle} label="Lessons Completed" value={Object.values(progressMap).reduce((acc, p) => acc + p.completed, 0)} />
                         </div>
                         <div>
                             <h3 className="text-xl font-bold text-slate-800 mb-4">Continue Learning</h3>
@@ -1094,36 +619,9 @@ const StudentDashboard = () => {
                 {/* LEARNING TAB */}
                 {activeTab === "learning" && (
                     <div>
-                        {/* ✅ NEW: Sub-navigation to separate Standard vs Coding courses */}
-                        <div className="flex gap-4 mb-6 border-b border-slate-200 pb-2">
-                            <button
-                                onClick={() => setLearningSubTab("standard")}
-                                className={`pb-2 text-sm font-bold transition-all ${learningSubTab === "standard"
-                                    ? "text-[#0A0A0A] border-b-2 border-[#0A0A0A]"
-                                    : "text-slate-500 hover:text-slate-800"
-                                    }`}
-                            >
-                                Standard Courses
-                            </button>
-                            <button
-                                onClick={() => setLearningSubTab("coding")}
-                                className={`pb-2 text-sm font-bold transition-all ${learningSubTab === "coding"
-                                    ? "text-[#0A0A0A] border-b-2 border-[#0A0A0A]"
-                                    : "text-slate-500 hover:text-slate-800"
-                                    }`}
-                            >
-                                Coding Courses
-                            </button>
-                        </div>
-
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {/* ✅ Logic: Filter courses based on the selected sub-tab */}
                             {enrolledCourses
-                                .filter(c => {
-                                    if (learningSubTab === "standard") return c.course_type !== "coding";
-                                    if (learningSubTab === "coding") return c.course_type === "coding";
-                                    return true;
-                                })
+                                .filter(c => c.course_type !== "coding")
                                 .map(c => (
                                     <CourseCard
                                         key={c.id}
@@ -1148,18 +646,6 @@ const StudentDashboard = () => {
                 {activeTab === "explore" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         {availableCourses.map(c => <CourseCard key={c.id} course={c} type="available" handleFreeEnroll={handleFreeEnroll} openEnrollModal={openEnrollModal} />)}
-                    </div>
-                )}
-
-                {/* TEST TAB */}
-                {activeTab === "test" && (
-                    <div className="grid gap-5">
-                        {codeTests.map(test => (
-                            <div key={test.id} className="bg-white p-6 rounded-xl border border-slate-200 flex justify-between items-center shadow-sm hover:shadow-md transition-all">
-                                <div><h3 className="text-lg font-bold text-slate-800">{test.title}</h3><p className="text-slate-500 text-sm">Duration: {test.time_limit} Mins</p></div>
-                                <button onClick={() => setShowPassKeyModal(test.id)} className="bg-[#0A0A0A] text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors">Start Test</button>
-                            </div>
-                        ))}
                     </div>
                 )}
 
@@ -1197,13 +683,47 @@ const StudentDashboard = () => {
                     </motion.div>
                 )}
 
-                {/* SETTINGS TAB */}
-                {activeTab === "settings" && (
-                    <div className="max-w-xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Lock size={20} className="text-slate-400" /> Change Password</h3>
-                        <div className="space-y-4">
-                            <div><label className="block text-xs font-bold text-slate-500 uppercase mb-2">New Password</label><input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#0A0A0A]" /></div>
-                            <button onClick={handleUpdatePassword} className="w-full py-3 bg-[#0A0A0A] hover:bg-blue-700 text-white rounded-xl font-bold transition-all">Update Password</button>
+                {/* PROFILE TAB */}
+                {activeTab === "profile" && (
+                    <div className="max-w-xl mx-auto space-y-6 animate-fade-in">
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+                                <User size={20} className="text-[#5755D9]" /> Profile Details
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                    <User size={18} className="text-slate-400 mt-0.5 shrink-0" />
+                                    <div className="min-w-0">
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Student Name</p>
+                                        <p className="text-sm font-bold text-slate-800 break-words">{studentProfile.name || "—"}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                    <Mail size={18} className="text-slate-400 mt-0.5 shrink-0" />
+                                    <div className="min-w-0">
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Email</p>
+                                        <p className="text-sm font-bold text-slate-800 break-all">{studentProfile.email || "—"}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 p-4 rounded-xl bg-slate-50 border border-slate-200">
+                                    <Phone size={18} className="text-slate-400 mt-0.5 shrink-0" />
+                                    <div className="min-w-0">
+                                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wide mb-1">Contact</p>
+                                        <p className="text-sm font-bold text-slate-800 break-words">{studentProfile.phone || "Not provided"}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2"><Lock size={20} className="text-slate-400" /> Change Password</h3>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-2">New Password</label>
+                                    <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-[#5755D9]" />
+                                </div>
+                                <button onClick={handleUpdatePassword} className="w-full py-3 bg-[#091941] hover:bg-[#5755D9] text-white rounded-xl font-bold transition-all">Update Password</button>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -1251,19 +771,6 @@ const StudentDashboard = () => {
                             </div>
                         </div>
                     </motion.div>
-                </div>
-            )}
-
-            {/* 🟢 PROFESSIONAL PASS KEY MODAL */}
-            {showPassKeyModal !== null && (
-                <div style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", background: "rgba(15, 23, 42, 0.6)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000 }}>
-                    <div style={{ background: "white", padding: "30px", borderRadius: "16px", width: "400px", boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)" }}>
-                        <div className="flex justify-center mb-4"><div className="bg-blue-50 p-3 rounded-full"><Lock className="text-[#0A0A0A]" size={32} /></div></div>
-                        <h3 style={{ margin: "0 0 10px 0", fontSize: "20px", fontWeight: "800", color: brand.textMain, textAlign: "center" }}>Enter Access Key</h3>
-                        <p className="text-center text-slate-500 text-sm mb-6">This challenge is protected. Enter the pass key provided by your instructor.</p>
-                        <input type="text" placeholder="e.g. SECRET123" value={passKeyInput} onChange={(e) => setPassKeyInput(e.target.value)} className="w-full p-3 border border-slate-300 rounded-lg outline-none focus:border-[#0A0A0A] text-center font-bold text-lg tracking-widest mb-6" />
-                        <div style={{ display: "flex", gap: "10px" }}><button onClick={() => setShowPassKeyModal(null)} style={{ flex: 1, padding: "12px", background: "transparent", border: `1px solid ${brand.border}`, borderRadius: "8px", fontWeight: "bold", color: brand.textLight, cursor: "pointer" }}>Cancel</button><button onClick={handleStartTest} style={{ flex: 1, padding: "12px", background: brand.brandPrimary, border: "none", borderRadius: "8px", fontWeight: "bold", color: "white", cursor: "pointer" }}>Start Test</button></div>
-                    </div>
                 </div>
             )}
 

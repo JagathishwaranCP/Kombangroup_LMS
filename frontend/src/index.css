@@ -10,81 +10,68 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* KOMBAN Learning Platform landing (v2) */
-.komban-landing {
-  --black: #0A0A0A;
-  --gold: #C09A2E;
-  --gold-light: #E8CB63;
-  --gold-dark: #9A7B1F;
-  --gold-gradient: linear-gradient(135deg, #9A7B1F 0%, #E8CB63 50%, #B8932F 100%);
-  --heading: #111111;
-  --body: #333333;
+/* CloudConnekt Learning Hub landing */
+.cc-landing {
+  --navy: #091941;
+  --indigo: #5755D9;
+  --indigo-deep: #283593;
+  --indigo-soft: #C5CAE9;
+  --heading: #091941;
+  --body: #50596C;
   --bg: #FFFFFF;
-  --bg-alt: #FAF8F2;
-  --border: #E9E2CC;
+  --bg-alt: #F7F8FC;
+  --border: #E8EAF6;
   font-family: 'Inter', sans-serif;
   color: var(--body);
   background: var(--bg);
   line-height: 1.7;
 }
 
-.komban-landing h1,
-.komban-landing h2,
-.komban-landing h3,
-.komban-landing h4 {
+.cc-landing h1,
+.cc-landing h2,
+.cc-landing h3,
+.cc-landing h4 {
   font-family: 'Poppins', sans-serif;
   line-height: 1.15;
 }
 
-.komban-landing .heading-dark { color: var(--heading); }
-.komban-landing .heading-light { color: #FFFFFF; }
+.cc-landing .heading-dark { color: var(--heading); }
+.cc-landing .heading-light { color: #FFFFFF; }
 
-.komban-landing .gold-text {
-  display: inline;
-  background-image: var(--gold-gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent !important;
-  color: transparent !important;
+/* Keep overlay copy readable on photo backgrounds */
+.cc-landing .overlay-copy {
+  text-shadow: 0 2px 18px rgba(9, 25, 65, 0.55);
 }
 
-@supports not ((-webkit-background-clip: text) or (background-clip: text)) {
-  .komban-landing .gold-text {
-    color: var(--gold) !important;
-    -webkit-text-fill-color: var(--gold) !important;
-    background-image: none;
-  }
+.cc-landing .overlay-copy .heading-light,
+.cc-landing .overlay-copy h1,
+.cc-landing .overlay-copy h2,
+.cc-landing .overlay-copy h3 {
+  color: #ffffff !important;
+  text-shadow: 0 2px 24px rgba(9, 25, 65, 0.7);
 }
 
-.komban-landing .btn-gold {
-  background: var(--gold-gradient);
-  color: #0A0A0A !important;
-  border-radius: 6px;
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  padding: 16px 32px;
-  box-shadow: 0 8px 24px rgba(192, 154, 46, 0.22);
-  transition: opacity 0.3s ease;
+.cc-landing .accent-text {
+  color: var(--indigo);
 }
 
-.komban-landing .btn-gold:hover { opacity: 0.92; }
-
-.komban-landing .btn-primary {
-  background: var(--black);
+.cc-landing .btn-primary {
+  background: var(--indigo);
   color: #ffffff !important;
   border-radius: 6px;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
   padding: 16px 32px;
-  transition: background 0.3s ease;
+  box-shadow: 0 8px 24px rgba(87, 85, 217, 0.28);
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
-.komban-landing .btn-primary:hover { background: #222; }
+.cc-landing .btn-primary:hover { background: var(--indigo-deep); }
 
-.komban-landing .btn-secondary {
-  background: #fff;
-  color: #111111 !important;
-  border: 1px solid #111111;
+.cc-landing .btn-secondary-on-dark {
+  background: transparent;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 6px;
   font-family: 'Inter', sans-serif;
   font-weight: 500;
@@ -92,11 +79,11 @@ body {
   transition: background 0.3s ease;
 }
 
-.komban-landing .btn-secondary:hover { background: var(--bg-alt); }
+.cc-landing .btn-secondary-on-dark:hover { background: rgba(255, 255, 255, 0.1); }
 
-.komban-landing .btn-login-outline {
-  border: 1px solid var(--gold);
-  color: var(--gold-light) !important;
+.cc-landing .btn-login-outline {
+  border: 1px solid var(--indigo);
+  color: var(--indigo) !important;
   background: transparent;
   border-radius: 6px;
   font-family: 'Inter', sans-serif;
@@ -105,25 +92,25 @@ body {
   transition: background 0.3s ease, color 0.3s ease;
 }
 
-.komban-landing .btn-login-outline:hover {
-  background: rgba(192, 154, 46, 0.12);
-  color: #FFFFFF !important;
+.cc-landing .btn-login-outline:hover {
+  background: rgba(87, 85, 217, 0.08);
+  color: var(--indigo-deep) !important;
 }
 
-.komban-landing .eyebrow {
+.cc-landing .eyebrow {
   font-family: 'Inter', sans-serif;
   font-weight: 600;
   font-size: 14px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: var(--gold-dark); /* small gold on light: darker for contrast */
+  color: var(--indigo);
 }
 
-.komban-landing .eyebrow-on-dark {
-  color: var(--gold-light);
+.cc-landing .eyebrow-on-dark {
+  color: var(--indigo-soft);
 }
 
-.komban-landing .container-k {
+.cc-landing .container-k {
   max-width: 1280px;
   margin: 0 auto;
   padding-left: 20px;
@@ -131,48 +118,115 @@ body {
 }
 
 @media (min-width: 1024px) {
-  .komban-landing .container-k {
+  .cc-landing .container-k {
     padding-left: 48px;
     padding-right: 48px;
   }
 }
 
-.komban-landing .section-pad {
+.cc-landing .section-pad {
   padding-top: 64px;
   padding-bottom: 64px;
 }
 
 @media (min-width: 1024px) {
-  .komban-landing .section-pad {
+  .cc-landing .section-pad {
     padding-top: 96px;
     padding-bottom: 96px;
   }
 }
 
-.komban-landing input,
-.komban-landing select,
-.komban-landing textarea {
-  color: #111111 !important;
-  background: #ffffff;
-}
-
-.komban-landing input::placeholder,
-.komban-landing textarea::placeholder {
-  color: #888888;
-  opacity: 1;
-}
-
-.komban-landing a:focus-visible,
-.komban-landing button:focus-visible,
-.komban-landing input:focus-visible,
-.komban-landing select:focus-visible,
-.komban-landing textarea:focus-visible {
-  outline: 2px solid var(--gold);
+.cc-landing a:focus-visible,
+.cc-landing button:focus-visible {
+  outline: 2px solid var(--indigo);
   outline-offset: 2px;
 }
 
+/* Key benefits horizontal scroll — scrollbar hidden, scroll still works */
+.cc-landing .benefits-scroll {
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  scroll-behavior: auto;
+}
+
+.cc-landing .benefits-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.cc-landing .benefits-scroll:active {
+  cursor: grabbing;
+}
+
+.cc-landing .benefits-scroll:focus-visible {
+  outline: 2px solid #5755D9;
+  outline-offset: 4px;
+}
+
+.cc-landing .benefits-icon-pulse {
+  animation: benefits-icon-bob 2.8s ease-in-out infinite;
+}
+
+/* Atmosphere image strip — continuous horizontal scroll */
+.cc-landing .atmosphere-scroll {
+  overflow: hidden;
+  width: 100%;
+}
+
+.cc-landing .atmosphere-track {
+  display: flex;
+  gap: 20px;
+  width: max-content;
+  padding: 12px 20px;
+  animation: atmosphere-marquee 32s linear infinite;
+  will-change: transform;
+}
+
+.cc-landing .atmosphere-track:hover {
+  animation-play-state: paused;
+}
+
+.cc-landing .atmosphere-track--static {
+  animation: none;
+}
+
+.cc-landing .atmosphere-slide {
+  width: min(70vw, 380px);
+  aspect-ratio: 4 / 3;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #e8eaf6;
+}
+
+@keyframes atmosphere-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.cc-landing .hero-shimmer {
+  background: linear-gradient(
+    110deg,
+    transparent 20%,
+    rgba(255, 255, 255, 0.06) 40%,
+    transparent 60%
+  );
+  background-size: 200% 100%;
+  animation: hero-shimmer 7s ease-in-out infinite;
+}
+
+@keyframes benefits-icon-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes hero-shimmer {
+  0% { background-position: 120% 0; }
+  100% { background-position: -40% 0; }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .komban-landing * {
+  .cc-landing * {
     animation: none !important;
     transition: none !important;
   }

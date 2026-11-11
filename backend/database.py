@@ -14,8 +14,8 @@ DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     raise ValueError("❌ DATABASE_URL is missing in .env file!")
 
-# Normalize DB URL to an async driver so one env var works for both
-# PostgreSQL and TiDB/MySQL deployments.
+# Normalize DB URL to an async driver so one env var works for
+# PostgreSQL, TiDB/MySQL, and local SQLite.
 if DATABASE_URL.startswith("postgresql+asyncpg://"):
     ASYNC_DATABASE_URL = DATABASE_URL
 elif DATABASE_URL.startswith("postgresql://"):
@@ -24,6 +24,10 @@ elif DATABASE_URL.startswith("mysql+aiomysql://"):
     ASYNC_DATABASE_URL = DATABASE_URL
 elif DATABASE_URL.startswith("mysql://"):
     ASYNC_DATABASE_URL = DATABASE_URL.replace("mysql://", "mysql+aiomysql://", 1)
+elif DATABASE_URL.startswith("sqlite+aiosqlite://"):
+    ASYNC_DATABASE_URL = DATABASE_URL
+elif DATABASE_URL.startswith("sqlite://"):
+    ASYNC_DATABASE_URL = DATABASE_URL.replace("sqlite://", "sqlite+aiosqlite://", 1)
 else:
     ASYNC_DATABASE_URL = DATABASE_URL
 
@@ -45,23 +49,37 @@ if ASYNC_DATABASE_URL.startswith("mysql+aiomysql://"):
     ))
 
 CONNECT_ARGS = {}
+ENGINE_KWARGS = {
+    "echo": False,
+}
+
 if ASYNC_DATABASE_URL.startswith("mysql+aiomysql://"):
     # TiDB Cloud requires secure transport. Build SSL context for aiomysql.
     ca_path = os.getenv("DB_SSL_CA_PATH")
     ssl_ctx = ssl.create_default_context(cafile=ca_path) if ca_path else ssl.create_default_context()
     CONNECT_ARGS["ssl"] = ssl_ctx
+    ENGINE_KWARGS.update({
+        "pool_size": 5,
+        "max_overflow": 10,
+        "pool_timeout": 30,
+        "pool_recycle": 1800,
+        "pool_pre_ping": True,
+    })
+elif ASYNC_DATABASE_URL.startswith("sqlite+aiosqlite://"):
+    CONNECT_ARGS["check_same_thread"] = False
+elif ASYNC_DATABASE_URL.startswith("postgresql+asyncpg://"):
+    ENGINE_KWARGS.update({
+        "pool_size": 5,
+        "max_overflow": 10,
+        "pool_timeout": 30,
+        "pool_recycle": 1800,
+        "pool_pre_ping": True,
+    })
 
-# 🟢 FIX: OPTIMIZED FOR FREE TIER
 engine = create_async_engine(
     ASYNC_DATABASE_URL,
-    echo=False,
     connect_args=CONNECT_ARGS,
-    # ⚠️ CRITICAL CHANGE: Reduced to prevent "Too many clients" error
-    pool_size=5,            # Keep only 5 connections open (Safe for Free Tier)
-    max_overflow=10,        # Allow 10 max during traffic spikes
-    pool_timeout=30,
-    pool_recycle=1800,
-    pool_pre_ping=True      # Check connection before using
+    **ENGINE_KWARGS,
 )
 
 AsyncSessionLocal = async_sessionmaker(

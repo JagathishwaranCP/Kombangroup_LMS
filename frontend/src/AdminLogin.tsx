@@ -18,9 +18,9 @@ const AdminLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
 
-  const gradientText = "bg-clip-text text-transparent bg-gradient-to-r from-[#0A0A0A] to-[#C09A2E]";
-  const gradientBg = "bg-gradient-to-r from-[#0A0A0A] to-[#C09A2E]";
-  const borderFocus = "focus-within:ring-2 focus-within:ring-[#0A0A0A] focus-within:border-transparent";
+  const gradientText = "bg-clip-text text-transparent bg-gradient-to-r from-[#091941] to-[#5755D9]";
+  const gradientBg = "bg-gradient-to-r from-[#091941] to-[#5755D9]";
+  const borderFocus = "focus-within:ring-2 focus-within:ring-[#091941] focus-within:border-transparent";
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -36,10 +36,12 @@ const AdminLogin = () => {
     setLoading(true);
     try {
       const loginParams = new URLSearchParams();
-      loginParams.append("username", formData.email);
+      loginParams.append("username", formData.email.trim());
       loginParams.append("password", formData.password);
 
-      const res = await axios.post(`${API_BASE_URL}/login`, loginParams);
+      const res = await axios.post(`${API_BASE_URL}/login`, loginParams, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      });
 
       if (res.data.role !== "instructor") {
         triggerToast("Access Denied. This portal is for Instructors only.", "error");
@@ -60,17 +62,17 @@ const AdminLogin = () => {
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-[#E2E8F0] font-sans p-4 overflow-hidden relative">
-      <button onClick={() => navigate("/")} className="absolute top-4 right-4 lg:top-6 lg:right-6 flex items-center gap-2 px-3 py-1.5 lg:px-5 lg:py-2.5 bg-white rounded-full shadow-md text-slate-600 hover:text-[#0A0A0A] hover:shadow-lg transition-all z-50 font-bold text-xs lg:text-sm border border-slate-200">
+      <button onClick={() => navigate("/")} className="absolute top-4 right-4 lg:top-6 lg:right-6 flex items-center gap-2 px-3 py-1.5 lg:px-5 lg:py-2.5 bg-white rounded-full shadow-md text-slate-600 hover:text-[#091941] hover:shadow-lg transition-all z-50 font-bold text-xs lg:text-sm border border-slate-200">
         <GraduationCap size={16} className="lg:w-[18px] lg:h-[18px]" /> Learner Portal
       </button>
 
       {/* Decorative Blurs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[#0A0A0A]/5 blur-[100px]"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#C09A2E]/5 blur-[100px]"></div>
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-[#091941]/5 blur-[100px]"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-[#5755D9]/5 blur-[100px]"></div>
 
       <div className="relative bg-[#F8FAFC] rounded-2xl shadow-2xl w-full max-w-[450px] p-6 lg:p-10 border border-slate-200 z-10">
         <div className="flex flex-col items-center text-center">
-          <div className="mb-2 flex items-center justify-center p-3 bg-white rounded-2xl border border-slate-100 shadow-sm"><ShieldCheck size={32} className="text-[#0A0A0A]" /></div>
+          <div className="mb-2 flex items-center justify-center p-3 bg-white rounded-2xl border border-slate-100 shadow-sm"><ShieldCheck size={32} className="text-[#091941]" /></div>
 
           <h1 className="text-3xl font-extrabold text-slate-800 mt-4 mb-2">Instructor Access</h1>
           <p className="text-slate-500 text-sm mb-6 px-4">Secure login for faculty and administration.</p>
@@ -103,7 +105,7 @@ const AdminLogin = () => {
                 className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400"
                 onChange={handleInputChange}
               />
-              <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-slate-400 hover:text-[#0A0A0A] focus:outline-none transition-colors ml-2 shrink-0">
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-slate-400 hover:text-[#091941] focus:outline-none transition-colors ml-2 shrink-0">
                 {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
@@ -118,7 +120,7 @@ const AdminLogin = () => {
           </div>
         </div>
       </div>
-      {toast.show && (<div className="fixed top-5 right-5 z-50 bg-white px-6 py-4 rounded-xl shadow-2xl border-l-4 border-l-current flex items-center gap-3 animate-fade-in" style={{ borderColor: toast.type === "success" ? "#C09A2E" : "#ef4444" }}>{toast.type === "success" ? <CheckCircle className="text-[#C09A2E]" size={24} /> : <AlertCircle className="text-red-500" size={24} />}<div><h4 className="font-bold text-slate-800 text-sm">{toast.type === "success" ? "Success" : "Error"}</h4><p className="text-slate-500 text-xs">{toast.message}</p></div><button onClick={() => setToast({ ...toast, show: false })} className="ml-2 text-slate-400 hover:text-slate-600"><X size={16} /></button></div>)}
+      {toast.show && (<div className="fixed top-5 right-5 z-50 bg-white px-6 py-4 rounded-xl shadow-2xl border-l-4 border-l-current flex items-center gap-3 animate-fade-in" style={{ borderColor: toast.type === "success" ? "#5755D9" : "#ef4444" }}>{toast.type === "success" ? <CheckCircle className="text-[#5755D9]" size={24} /> : <AlertCircle className="text-red-500" size={24} />}<div><h4 className="font-bold text-slate-800 text-sm">{toast.type === "success" ? "Success" : "Error"}</h4><p className="text-slate-500 text-xs">{toast.message}</p></div><button onClick={() => setToast({ ...toast, show: false })} className="ml-2 text-slate-400 hover:text-slate-600"><X size={16} /></button></div>)}
     </div>
   );
 };

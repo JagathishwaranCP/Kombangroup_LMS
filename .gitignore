@@ -20,6 +20,8 @@ pip-log.txt
 pip-delete-this-directory.txt
 .venv
 .pytest_cache/
+*.db
+backend/*.db
 
 # --- GLOBAL / SECURITY ---
 .env

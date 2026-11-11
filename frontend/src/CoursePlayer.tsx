@@ -1,18 +1,15 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
-import Editor from "@monaco-editor/react";
 import Plyr from "plyr-react";
 import "plyr/dist/plyr.css";
 import API_BASE_URL from './config';
-import { runTestCasesLocally } from './utils/pyodideEnv';
 import {
-    PlayCircle, FileText, ChevronLeft, Menu, Code, HelpCircle,
-    UploadCloud, Play, Save, Monitor, Cpu, ChevronDown, ChevronRight, CreditCard,
-    File as FileIcon, X, CheckCircle, Radio, Lock, ArrowLeft, AlertCircle, Clock,
-    Zap, CheckSquare, Square, CheckCheck, Award, Edit, AlertTriangle, Maximize, Minimize, LockKeyhole, Cloud, Link as ResourceLinkIcon // <--- Added 'Cloud' icon here
+    PlayCircle, FileText, ChevronLeft, Menu, HelpCircle,
+    UploadCloud, ChevronDown, ChevronRight, CreditCard,
+    File as FileIcon, X, CheckCircle, Radio, ArrowLeft, AlertCircle, Clock,
+    Zap, CheckSquare, Square, CheckCheck, Award, Edit, Maximize, Minimize, LockKeyhole, Link as ResourceLinkIcon
 } from "lucide-react";
-import { CODE_TEMPLATES } from './utils/codeTemplates';
 
 
 
@@ -43,629 +40,6 @@ const ToastNotification = ({ toast, setToast }: any) => {
     );
 };
 
-// --- 🔄 IMPROVED POLLING HELPER (UPDATED) ---
-// We changed this to handle the "Batch JSON" response structure.
-// --- 🔄 UPDATED POLLING HELPER ---
-// --- POLLING HELPER REMOVED (Lambda is sync) ---
-
-// --- 💻 COMPONENT: CODE COMPILER (For Standard Lessons) ---
-// Updated to send 'test_cases' array instead of 'stdin'
-const CodeCompiler = ({ lesson }: { lesson: any }) => {
-    const [toast, setToast] = useState({ show: false, message: "", type: "success" });
-    const triggerToast = (message: string, type: "success" | "error" = "success") => {
-        setToast({ show: true, message, type });
-        setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
-    };
-    const problems = useMemo(() => {
-        try {
-            if (!lesson.test_config) return [];
-            let parsed = JSON.parse(lesson.test_config);
-            if (typeof parsed === "string") parsed = JSON.parse(parsed);
-            return parsed.problems || [];
-        } catch (e) {
-            console.error("❌ Failed to parse Code Test Config:", e);
-            return [];
-        }
-    }, [lesson.test_config]);
-
-    const [activeProblemIndex, setActiveProblemIndex] = useState(0);
-    const activeProblem = problems[activeProblemIndex] || {
-        title: "No Problem Configured", description: "Please ask the instructor to update this test.", testCases: []
-    };
-
-    const [code, setCode] = useState(CODE_TEMPLATES.python);
-    const [output, setOutput] = useState("Ready to execute...");
-    const [loading, setLoading] = useState(false);
-    const [language, setLanguage] = useState(71);
-    const [canSubmit, setCanSubmit] = useState(false); // ✅ Strict Unlock
-
-    const languages = [
-        { id: 71, name: "Python (3.8.1)", value: "python" },
-        { id: 62, name: "Java (OpenJDK 13)", value: "java" },
-        { id: 54, name: "C++ (GCC 9.2.0)", value: "cpp" },
-        { id: 63, name: "JavaScript (Node.js)", value: "javascript" },
-    ];
-
-    // 🟢 HANDLE RUN CODE (Local / Dry Run)
-    const handleRunCode = async () => {
-        setLoading(true);
-        setOutput("Processing...");
-        setCanSubmit(false); // Reset
-
-        const testCasesPayload = activeProblem.testCases || [];
-
-        if (testCasesPayload.length === 0) {
-            setOutput("⚠️ No test cases found.");
-            setLoading(false);
-            return;
-        }
-
-        // 1. PYTHON LOCAL CHECK (Strict)
-        if (language === 71) {
-            setOutput("🔹 Running Local Tests (Pyodide)...");
-            const localResult = await runTestCasesLocally(code, testCasesPayload);
-
-            if (localResult.success) {
-                setOutput(localResult.output); // Detailed output
-                triggerToast("All Local Tests Passed!", "success");
-                setCanSubmit(true); // ✅ Unlock
-            } else {
-                setOutput(`❌ Execution Failed:\n${localResult.error || localResult.output}`);
-                triggerToast("Tests Failed", "error");
-            }
-            setLoading(false);
-            return;
-        }
-
-        // 2. JAVA/C++ DRY RUN (Full Test Cases)
-        setOutput("🚀 Compiling on Server (Dry Run)...");
-        try {
-            const res = await axios.post(`${API_BASE_URL}/execute`, {
-                source_code: code,
-                language_id: language,
-                test_cases: testCasesPayload
-            }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
-
-            const result = res.data;
-            const report = result.stats ? result : result.data;
-
-            if (report.error) {
-                setOutput(`❌ Server Error: ${report.error}`);
-            } else {
-                const passed = report.stats?.passed || 0;
-                const total = report.stats?.total || 0;
-
-                let display = `✨ Dry Run Complete!\nPassed: ${passed}/${total}\nRuntime: ${report.stats?.runtime_ms}ms\n\n`;
-                (report.results || []).forEach((r: any) => {
-                    display += `${r.status === "Passed" ? "✅" : "❌"} Case ${r.id + 1}: ${r.status}\n`;
-                    if (r.status !== "Passed") display += `   Input: ${r.input}\n   Expected: ${r.expected}\n   Actual: ${r.actual}\n\n`;
-                });
-                setOutput(display);
-
-                if (total > 0 && passed === total) {
-                    setCanSubmit(true); // ✅ Unlock
-                    triggerToast("All tests passed!", "success");
-                } else {
-                    triggerToast("Tests failed", "error");
-                }
-            }
-        } catch (err: any) {
-            setOutput("❌ Execution Failed: " + (err.response?.data?.error || err.message));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // 🔵 HANDLE SUBMIT (Run All Cases)
-    const handleSubmit = async () => {
-        if (!canSubmit) { triggerToast("Run code successfully first!", "error"); return; }
-
-        setLoading(true);
-        setOutput("🚀 Submitting Code...");
-
-        try {
-            const testCasesPayload = activeProblem.testCases || [];
-            if (testCasesPayload.length === 0) {
-                triggerToast("No test cases to run.", "error"); setLoading(false); return;
-            }
-
-            const res = await axios.post(`${API_BASE_URL}/execute`, {
-                source_code: code,
-                language_id: language,
-                test_cases: testCasesPayload
-            }, { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } });
-
-            const result = res.data;
-            const report = result.stats ? result : result.data;
-
-            if (report && report.stats) {
-                let display = `✨ Execution Complete!\nRuntime: ${report.stats.runtime_ms}ms | Passed: ${report.stats.passed}/${report.stats.total}\n\n`;
-                report.results.forEach((r: any) => {
-                    display += `${r.status === "Passed" ? "✅" : "❌"} Case ${r.id + 1}: ${r.status}\n`;
-                    if (r.status !== "Passed") display += `   Input: ${r.input}\n   Expected: ${r.expected}\n   Actual: ${r.actual}\n\n`;
-                });
-                setOutput(display);
-
-                if (report.stats.total > 0 && report.stats.passed === report.stats.total) {
-                    triggerToast("All Test Cases Passed!", "success");
-                    // Optional: Save code on success
-                } else {
-                    triggerToast("Some test cases failed", "error");
-                }
-            } else {
-                setOutput(result.output !== undefined ? (result.output || "No output returned.") : (result.error || "Execution failed."));
-            }
-        } catch (err: any) {
-            setOutput("❌ Submission Failed: " + (err.response?.data?.error || err.message));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const saveProgress = () => {
-        triggerToast("Code Saved Successfully!", "success");
-    };
-
-    if (!problems.length) return (
-        <div className="flex items-center justify-center h-full bg-slate-100 text-slate-500 font-bold p-10 text-center">
-            ⚠️ No coding problems found. <br /> (Instructor: Please edit and re-save this item in Course Builder).
-        </div>
-    );
-
-    return (
-        <div className="flex flex-col lg:flex-row h-full p-2 lg:p-4 gap-4 bg-slate-100 font-sans relative overflow-y-auto lg:overflow-hidden">
-            <ToastNotification toast={toast} setToast={setToast} />
-
-            {/* Left Panel: Problems */}
-            <div className="w-full lg:w-[40%] h-[400px] lg:h-full flex flex-col gap-4 shrink-0">
-                <div className="flex-1 bg-white rounded-xl shadow-sm border border-slate-200 p-4 lg:p-6 overflow-y-auto">
-                    <div className="flex gap-2 mb-6 border-b border-slate-100 pb-2 overflow-x-auto">
-                        {problems.map((_: any, idx: number) => (
-                            <button
-                                key={idx}
-                                onClick={() => { setActiveProblemIndex(idx); setOutput("Ready to execute..."); setCanSubmit(false); }}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 ${activeProblemIndex === idx ? "bg-blue-600 text-white" : "bg-slate-100 text-slate-500 hover:bg-slate-200"}`}
-                            >
-                                Problem {idx + 1}
-                            </button>
-                        ))}
-                    </div>
-
-                    <div className="flex justify-between items-start mb-4">
-                        <h2 className="text-lg lg:text-xl font-extrabold text-slate-800 m-0">{activeProblem.title}</h2>
-                        <span className="bg-yellow-100 text-yellow-700 text-[10px] lg:text-xs font-bold px-2 py-1 rounded uppercase shrink-0">{activeProblem.difficulty || "Medium"}</span>
-                    </div>
-                    <div className="prose prose-sm text-slate-600 mb-6 whitespace-pre-wrap text-xs lg:text-sm">
-                        {activeProblem.description || "No description provided."}
-                    </div>
-                    <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-widest mb-3">Test Cases</h3>
-                    <div className="space-y-3">
-                        {activeProblem.testCases?.map((tc: any, i: number) => (
-                            (
-                                <div key={i} className="bg-slate-50 p-3 rounded-lg border border-slate-200">
-                                    <div className="text-xs font-bold text-slate-500 mb-1">Input:</div>
-                                    <div className="font-mono text-xs bg-white p-2 rounded border border-slate-200 mb-2 overflow-x-auto">{tc.input}</div>
-                                    <div className="text-xs font-bold text-slate-500 mb-1">Expected Output:</div>
-                                    <div className="font-mono text-xs bg-white p-2 rounded border border-slate-200 overflow-x-auto">{tc.output}</div>
-                                </div>
-                            )
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Right Panel: Editor */}
-            <div className="w-full lg:w-[60%] h-[500px] lg:h-full flex flex-col gap-4 shrink-0">
-                <div className="flex-[2.5] flex flex-col bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden min-h-[300px]">
-                    <div className="bg-slate-50 border-b border-slate-200 p-2 flex justify-between items-center px-4 h-12">
-                        <div className="flex items-center gap-2 text-slate-600 font-bold text-sm"><Code size={16} /> Code Editor</div>
-                        <select className="bg-white border border-slate-300 text-slate-700 text-xs font-bold rounded px-2 py-1 outline-none focus:ring-2 focus:ring-blue-500" value={language} onChange={(e) => {
-                            const newLangId = parseInt(e.target.value);
-                            setLanguage(newLangId);
-                            const template = newLangId === 71 ? CODE_TEMPLATES.python : (newLangId === 62 ? CODE_TEMPLATES.java : CODE_TEMPLATES.cpp);
-                            setCode(template);
-                        }}>
-                            {languages.map(l => <option key={l.id} value={l.id}>{l.name}</option>)}
-                        </select>
-                    </div>
-                    <div className="flex-1">
-                        <Editor height="100%" defaultLanguage="python" language={languages.find(l => l.id === language)?.value} theme="light" value={code} onChange={(val) => { setCode(val || ""); setCanSubmit(false); }} options={{ minimap: { enabled: false }, fontSize: 14, scrollBeyondLastLine: false }} />
-                    </div>
-                </div>
-                <div className="flex-[1.5] flex flex-col gap-4 min-h-[200px]">
-                    <div className="flex-[1.3] flex flex-col bg-slate-900 rounded-xl overflow-hidden shadow-sm">
-                        <div className="bg-slate-800 text-slate-400 px-4 py-2 text-xs font-bold uppercase tracking-wider flex items-center gap-2"><Monitor size={14} /> Terminal Output</div>
-                        <div className="flex-1 p-4 font-mono text-xs lg:text-sm text-green-400 overflow-y-auto whitespace-pre-wrap">{output}</div>
-                    </div>
-                    <div className="flex-[0.2] flex gap-3">
-                        <button onClick={saveProgress} className="bg-white border-2 border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50 font-bold rounded-xl flex items-center justify-center gap-2 transition-all p-2"><Save size={18} /></button>
-                        <button onClick={handleRunCode} disabled={loading} className="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-70 text-sm lg:text-base p-2">{loading ? <Cpu size={18} className="animate-spin" /> : <Play size={18} />} Run Code</button>
-                        <button
-                            onClick={handleSubmit}
-                            disabled={loading || !canSubmit}
-                            title={!canSubmit ? "Run code successfully first" : "Submit solution"}
-                            className={`flex-1 font-bold rounded-xl flex items-center justify-center gap-2 transition-all disabled:opacity-70 text-sm lg:text-base p-2 ${canSubmit ? "bg-[#0A0A0A] hover:bg-[#222222] text-white" : "bg-slate-300 text-slate-500 cursor-not-allowed"}`}
-                        >
-                            {loading ? <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div> : <Cloud size={18} />} Submit
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-// --- 🆕 COMPONENT: CODING COURSE PLAYER (Updated Logic) ---
-const CodingPlayer = ({ course, token }: { course: any, token: string }) => {
-    const { courseId } = useParams();
-    const navigate = useNavigate();
-    const [challenges, setChallenges] = useState<any[]>([]);
-    const [activeTab, setActiveTab] = useState("Easy");
-
-    // Problem & Execution State
-    const [selectedProblem, setSelectedProblem] = useState<any>(null);
-    const [code, setCode] = useState(CODE_TEMPLATES.python);
-    const [output, setOutput] = useState("Ready to execute...");
-    const [loading, setLoading] = useState(false);
-    const [stats, setStats] = useState<{ runtime: string, passed: number, total: number, results: any[] } | null>(null);
-    const [canSubmit, setCanSubmit] = useState(false); // ✅ Strict Unlock
-
-    const [toast, setToast] = useState({ show: false, message: "", type: "success" });
-    const triggerToast = (message: string, type: "success" | "error" = "success") => {
-        setToast({ show: true, message, type });
-        setTimeout(() => setToast(prev => ({ ...prev, show: false })), 3000);
-    };
-
-    useEffect(() => { loadChallenges(); }, []);
-
-    const loadChallenges = async () => {
-        try {
-            const res = await axios.get(`${API_BASE_URL}/courses/${courseId}/challenges`, { headers: { Authorization: `Bearer ${token}` } });
-            setChallenges(res.data);
-        } catch (err) { console.error("Failed to load challenges", err); }
-    };
-
-    // --- 🟢 STAGE COMPLETION LOGIC ---
-    // Helper to check if a specific level is 100% complete
-    const isStageComplete = (level: string) => {
-        const stageprobs = challenges.filter(c => c.difficulty === level);
-        if (stageprobs.length === 0) return false; // Empty stage is not "complete"
-        return stageprobs.every(c => c.is_solved);
-    };
-
-    // Logic for Easy, Medium, Hard Status
-    const easyComplete = isStageComplete("Easy");
-    const mediumComplete = isStageComplete("Medium");
-    const hardComplete = isStageComplete("Hard");
-    const courseFullyComplete = easyComplete && mediumComplete && hardComplete;
-
-    // --- 🔒 LOCKING LOGIC ---
-    // Medium locked until Easy is done. Hard locked until Medium is done.
-    const isTabLocked = (tab: string) => {
-        if (tab === "Easy") return false; // Easy always open
-        if (tab === "Medium") return !easyComplete;
-        if (tab === "Hard") return !mediumComplete;
-        return true;
-    };
-
-    const handleClaimCertificate = async () => {
-        try {
-            const res = await axios.post(`${API_BASE_URL}/courses/${courseId}/claim-certificate`, {}, { headers: { Authorization: `Bearer ${token}` } });
-            if (res.data.status === "success") {
-                triggerToast("🎉 Certificate Generated!", "success");
-                setTimeout(() => navigate("/student-dashboard"), 2000);
-            } else {
-                triggerToast(res.data.message, "error");
-            }
-        } catch (e) { triggerToast("Failed to claim certificate", "error"); }
-    };
-
-    // 🟢 HANDLE RUN CODE (Dry Run)
-    const handleRunCode = async () => {
-        setLoading(true);
-        setOutput("Processing...");
-        setCanSubmit(false); // Reset
-        const langMap: any = { "python": 71, "java": 62, "cpp": 54, "javascript": 63 };
-        const langId = langMap[course.language] || 71;
-
-        let allCases: any[] = [];
-        try {
-            allCases = typeof selectedProblem.test_cases === 'string' ? JSON.parse(selectedProblem.test_cases) : selectedProblem.test_cases;
-        } catch (e) { allCases = []; }
-
-        if (!allCases || allCases.length === 0) {
-            setOutput("⚠️ No test cases found.");
-            setLoading(false);
-            return;
-        }
-
-        if (langId === 71) {
-            setOutput("🔹 Running Local Tests (Pyodide)...");
-            const localResult = await runTestCasesLocally(code, allCases);
-
-            if (localResult.success) {
-                setOutput(localResult.output);
-                triggerToast("All Local Tests Passed!", "success");
-                setCanSubmit(true); // ✅ Unlock logic
-            } else {
-                setOutput(`❌ Local Execution Failed:\n${localResult.error || localResult.output}`);
-                triggerToast("Tests Failed", "error");
-            }
-            setLoading(false);
-            return;
-        }
-
-        // Java/C++ Dry Run
-        setOutput("🚀 Compiling on Server (Dry Run)...");
-        try {
-            const res = await axios.post(`${API_BASE_URL}/execute`, {
-                source_code: code,
-                language_id: langId,
-                test_cases: allCases // Send ALL cases
-            }, { headers: { Authorization: `Bearer ${token}` } });
-
-            const report = res.data.stats ? res.data : res.data.data;
-
-            if (report.error) {
-                setOutput(`❌ Server Error: ${report.error}`);
-            } else {
-                const passed = report.stats?.passed || 0;
-                const total = report.stats?.total || 0;
-
-                let display = `✨ Dry Run Complete!\nPassed: ${passed}/${total}\nRuntime: ${report.stats?.runtime_ms}ms\n\n`;
-                (report.results || []).forEach((r: any) => {
-                    display += `${r.status === "Passed" ? "✅" : "❌"} Case ${r.id + 1}: ${r.status}\n`;
-                    if (r.status !== "Passed") display += `   Input: ${r.input}\n   Expected: ${r.expected}\n   Actual: ${r.actual}\n\n`;
-                });
-                setOutput(display);
-
-                if (total > 0 && passed === total) {
-                    setCanSubmit(true); // ✅ Unlock logic
-                    triggerToast("All tests passed!", "success");
-                } else {
-                    triggerToast("Tests failed", "error");
-                }
-            }
-        } catch (err: any) {
-            setOutput("System Error: " + (err.response?.data?.error || err.message));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    // 🔵 HANDLE SUBMIT (Grading)
-    const handleSubmit = async () => {
-        if (!canSubmit) { triggerToast("Run code successfully first!", "error"); return; }
-        setLoading(true);
-        setOutput("🚀 Submitting to Official Grader...");
-        setStats(null);
-
-        try {
-            const langMap: any = { "python": 71, "java": 62, "cpp": 54, "javascript": 63 };
-            const langId = langMap[course.language] || 71;
-
-            let cases = [];
-            try {
-                cases = typeof selectedProblem.test_cases === 'string' ? JSON.parse(selectedProblem.test_cases) : selectedProblem.test_cases;
-            } catch (e) {
-                setOutput("❌ Error: Invalid Test Case Format.");
-                setLoading(false); return;
-            }
-
-            if (!cases || cases.length === 0) {
-                setOutput("❌ Error: No Test Cases Found.");
-                triggerToast("Cannot submit empty test cases", "error");
-                setLoading(false); return;
-            }
-
-            const res = await axios.post(`${API_BASE_URL}/execute`, {
-                source_code: code,
-                language_id: langId,
-                test_cases: cases
-            }, { headers: { Authorization: `Bearer ${token}` } });
-
-            let report = res.data;
-            if (report.error) {
-                setOutput(`❌ SERVER ERROR:\n\n${report.error}`);
-                setLoading(false);
-                return;
-            }
-
-            setStats({
-                runtime: `${report.stats?.runtime_ms || 0} ms`,
-                passed: report.stats?.passed || 0,
-                total: report.stats?.total || 0,
-                results: report.results || []
-            });
-
-            if (report.stats?.total > 0 && report.stats?.passed === report.stats?.total) {
-                setOutput("🎉 SUCCESS! All Test Cases Passed.");
-                triggerToast("Problem Solved!", "success");
-
-                // 1. Mark Solved in Backend
-                await axios.post(`${API_BASE_URL}/challenges/${selectedProblem.id}/solve`, {}, { headers: { Authorization: `Bearer ${token}` } });
-
-                // 2. Update Local State
-                const updated = challenges.map(c => c.id === selectedProblem.id ? { ...c, is_solved: true } : c);
-                setChallenges(updated);
-            } else {
-                const fail = report.results?.find((r: any) => r.status !== "Passed");
-                if (fail) setOutput(`❌ TEST FAILED (Case ${fail.id + 1})\n\nInput: ${fail.input}\nExpected: ${fail.expected}\nActual: ${fail.actual}`);
-                triggerToast("Hidden Test Cases Failed", "error");
-            }
-
-        } catch (err: any) {
-            setOutput("System Error: " + (err.response?.data?.error || err.message));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    if (selectedProblem) {
-        return (
-            <div className="flex flex-col lg:flex-row h-screen w-screen bg-[#F8FAFC] font-sans p-2 lg:p-6 overflow-hidden relative">
-                <ToastNotification toast={toast} setToast={setToast} />
-
-                {/* LEFT PANEL */}
-                <div className="w-full lg:w-[35%] flex flex-col h-[40vh] lg:h-full bg-white rounded-2xl shadow-sm border border-slate-200 mb-4 lg:mb-0 lg:mr-6 overflow-hidden shrink-0">
-                    <div className="p-4 lg:p-5 border-b border-slate-100 flex items-center gap-3">
-                        <button onClick={() => { setSelectedProblem(null); setStats(null); setOutput("Ready to execute..."); setCanSubmit(false); }} className="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors text-slate-600">
-                            <ArrowLeft size={18} />
-                        </button>
-                        <h2 className="text-xs lg:text-sm font-bold text-slate-500 uppercase tracking-wide">{course.language}</h2>
-                    </div>
-                    <div className="p-4 lg:p-8 overflow-y-auto flex-1">
-                        <h1 className="text-xl lg:text-3xl font-extrabold text-slate-900 mb-4">{selectedProblem.title}</h1>
-                        <div className="prose prose-sm prose-slate text-slate-600 leading-relaxed mb-8 whitespace-pre-wrap">{selectedProblem.description}</div>
-
-                        {/* RESULT BOX */}
-                        {stats && (
-                            <div className={`p-4 rounded-xl mb-6 border ${stats.passed === stats.total ? "bg-green-50 border-green-200 text-green-800" : "bg-red-50 border-red-200 text-red-800"}`}>
-                                <div className="flex justify-between items-center mb-2">
-                                    <h3 className="font-bold text-base lg:text-lg flex items-center gap-2">
-                                        {stats.passed === stats.total ? <CheckCircle size={20} /> : <AlertTriangle size={20} />}
-                                        {stats.passed === stats.total ? "Accepted" : "Wrong Answer"}
-                                    </h3>
-                                    <span className="text-xs font-mono bg-white/50 px-2 py-1 rounded border border-black/5">Time: {stats.runtime}</span>
-                                </div>
-                                <p className="text-sm font-bold">{stats.passed} / {stats.total} cases passed</p>
-                            </div>
-                        )}
-
-                        <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-widest mb-4">TEST CASES</h3>
-                        <div className="space-y-4">
-                            {(typeof selectedProblem.test_cases === 'string' ? JSON.parse(selectedProblem.test_cases) : selectedProblem.test_cases).map((tc: any, i: number) => {
-                                if (tc.hidden) return null;
-                                return (
-                                    <div key={i} className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                                        <div className="text-xs font-bold text-slate-500 mb-1">Input: {tc.input}</div>
-                                        <div className="text-xs font-bold text-slate-500">Output: {tc.output}</div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    </div>
-                </div>
-
-                {/* RIGHT PANEL */}
-                <div className="w-full lg:w-[65%] flex flex-col h-[60vh] lg:h-full gap-4 shrink-0">
-                    <div className="flex-[2] bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden flex flex-col min-h-[300px]">
-                        <div className="h-10 lg:h-12 border-b border-slate-100 flex items-center justify-between px-4 lg:px-6 bg-white shrink-0">
-                            <div className="flex items-center gap-2 text-[#0A0A0A] font-bold text-xs lg:text-sm"><Code size={16} /> Code Editor</div>
-                            <span className="text-[10px] text-slate-400 font-medium hidden sm:inline">⚠️ Use "return", do not use "input()"</span>
-                        </div>
-                        <div className="flex-1 p-2">
-                            <Editor height="100%" defaultLanguage={course.language || "python"} theme="light" value={code} onChange={(val) => { setCode(val || ""); setCanSubmit(false); }} options={{ minimap: { enabled: false }, fontSize: 15, padding: { top: 20 }, scrollBeyondLastLine: false }} />
-                        </div>
-                    </div>
-                    <div className="flex-[1] bg-[#0f172a] rounded-2xl shadow-sm border border-slate-800 overflow-hidden flex flex-col min-h-[150px]">
-                        <div className="h-8 lg:h-10 bg-[#1e293b] border-b border-slate-700 flex items-center px-4 shrink-0">
-                            <span className="text-slate-400 text-xs font-bold uppercase tracking-wider flex items-center gap-2"><Monitor size={14} /> Output</span>
-                        </div>
-                        <div className="flex-1 p-3 lg:p-5 font-mono text-xs lg:text-sm text-[#4ade80] overflow-auto whitespace-pre-wrap leading-relaxed">{output}</div>
-                        <div className="p-3 lg:p-4 bg-slate-800 flex justify-end gap-4 shrink-0">
-                            <button onClick={handleRunCode} disabled={loading} className="px-6 py-2 lg:px-8 lg:py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold shadow-lg flex items-center gap-2 transition-all text-sm lg:text-base">
-                                {loading ? <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div> : <Play size={18} />} Run Code
-                            </button>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={loading || !canSubmit}
-                                title={!canSubmit ? "Run code first" : "Submit solution"}
-                                className={`px-6 py-2 lg:px-8 lg:py-3 rounded-xl font-bold shadow-lg flex items-center gap-2 transition-all text-sm lg:text-base ${canSubmit ? "bg-[#0A0A0A] hover:bg-[#222222] text-white" : "bg-slate-300 text-slate-500 cursor-not-allowed"}`}
-                            >
-                                {loading ? <div className="animate-spin h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div> : <Cloud size={18} />} Submit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )
-    }
-
-    return (
-        <div className="min-h-screen bg-slate-50 font-sans p-4 lg:p-10">
-            <ToastNotification toast={toast} setToast={setToast} />
-            <div className="max-w-6xl mx-auto">
-                <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 lg:mb-10 gap-4">
-                    <div className="flex items-center gap-4">
-                        <button onClick={() => navigate("/student-dashboard")} className="p-2 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-500"><ChevronLeft size={20} /></button>
-                        <div>
-                            <h1 className="text-2xl lg:text-3xl font-extrabold text-slate-900 m-0">{course.title}</h1>
-                            <p className="text-slate-500 text-sm mt-1">Language: <span className="font-bold text-[#0A0A0A] uppercase">{course.language}</span></p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* --- 🟢 STAGE TABS WITH DOUBLE TICK LOGIC --- */}
-                <div className="flex gap-4 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-                    {[
-                        { name: "Easy", complete: easyComplete },
-                        { name: "Medium", complete: mediumComplete },
-                        { name: "Hard", complete: hardComplete }
-                    ].map(tab => {
-                        const locked = isTabLocked(tab.name);
-                        return (
-                            <button
-                                key={tab.name}
-                                disabled={locked}
-                                onClick={() => setActiveTab(tab.name)}
-                                className={`px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 transition-all border shrink-0
-                                    ${activeTab === tab.name ? "bg-[#0A0A0A] text-white shadow-lg scale-105 border-transparent" : "bg-white text-slate-500 border-slate-200 hover:bg-slate-50"}
-                                    ${tab.complete ? "border-green-500 bg-green-50 text-green-700" : ""}
-            `}
-                                style={{ opacity: locked ? 0.6 : 1, cursor: locked ? "not-allowed" : "pointer" }}
-                            >
-                                {tab.name} Level
-                                {locked && <Lock size={14} />}
-                                {tab.complete && <CheckCheck size={16} className="text-green-600" />} {/* ✅ Double Tick */}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {challenges.filter(c => c.difficulty === activeTab).map((c, idx) => (
-                        <div key={c.id} className={`bg-white p-6 rounded-2xl border transition-all hover:shadow-xl group relative overflow-hidden ${c.is_solved ? "border-green-200 bg-green-50/30" : "border-slate-200"}`}>
-                            {c.is_solved && <div className="absolute top-0 right-0 bg-[#C09A2E] text-white p-1 rounded-bl-xl"><CheckCircle size={16} /></div>}
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-lg ${c.is_solved ? "bg-green-100 text-green-700" : "bg-blue-50 text-[#0A0A0A]"}`}>
-                                    {idx + 1}
-                                </div>
-                                <h4 className="font-bold text-slate-800 text-lg line-clamp-1">{c.title}</h4>
-                            </div>
-                            <p className="text-slate-500 text-sm line-clamp-2 mb-6 h-10">{c.description}</p>
-                            <button
-                                onClick={() => setSelectedProblem(c)}
-                                className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-colors ${c.is_solved ? "bg-white border border-green-200 text-green-700" : "bg-slate-900 text-white hover:bg-[#0A0A0A]"}`}
-                            >
-                                {c.is_solved ? "Solve Again" : "Solve Challenge"} {!c.is_solved && <ArrowLeft className="rotate-180" size={16} />}
-                            </button>
-                        </div>
-                    ))}
-                    {challenges.filter(c => c.difficulty === activeTab).length === 0 && (
-                        <div className="col-span-full text-center py-20 text-slate-400">
-                            <p className="font-bold text-lg">No challenges available in this section yet.</p>
-                        </div>
-                    )}
-                </div>
-
-                {/* --- 🏆 CERTIFICATE BUTTON (Visible only if Course Complete) --- */}
-                {courseFullyComplete && (
-                    <div className="mt-12 p-8 bg-gradient-to-r from-green-500 to-green-600 rounded-2xl text-center shadow-xl text-white animate-fade-in">
-                        <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <Award size={32} className="text-white" />
-                        </div>
-                        <h2 className="text-3xl font-extrabold mb-2">Course Completed!</h2>
-                        <p className="mb-6 opacity-90">You have successfully mastered all levels. Claim your certificate now.</p>
-                        <button onClick={handleClaimCertificate} className="bg-white text-green-700 px-8 py-3 rounded-xl font-bold hover:scale-105 transition-transform shadow-lg">
-                            Claim Certificate
-                        </button>
-                    </div>
-                )}
-            </div>
-        </div>
-    )
-};
 // --- ⏳ DELAYED PLAYER COMPONENT (Fixes the crash) ---
 const DelayedVideoPlayer = ({ lesson, plyrOptions }: { lesson: any, plyrOptions: any }) => {
     const [isReady, setIsReady] = useState(false);
@@ -1096,14 +470,14 @@ const CoursePlayer = () => {
     const [uploading, setUploading] = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const [isEditing, setIsEditing] = useState(false);
-    const [editForm, setEditForm] = useState({ title: "", description: "", price: 0, image_url: "", language: "" });
+    const [editForm, setEditForm] = useState({ title: "", description: "", price: 0, image_url: "" });
 
     // ✅ 1. NEW STATE FOR PAYWALL
     const [isTrialExpired, setIsTrialExpired] = useState(false);
     const [expiredCourseDetails, setExpiredCourseDetails] = useState<{ title: string, price: number } | null>(null);
     const handleEditClick = () => {
         if (!course) return;
-        setEditForm({ title: course.title || "", description: course.description || "", price: course.price || 0, image_url: course.image_url || "", language: course.language || "" });
+        setEditForm({ title: course.title || "", description: course.description || "", price: course.price || 0, image_url: course.image_url || "" });
         setIsEditing(true);
     };
 
@@ -1372,7 +746,15 @@ const CoursePlayer = () => {
             );
         }
         else if (activeLesson.type === "live_test") contentBody = <LiveTestProctor lesson={activeLesson} />;
-        else if (activeLesson.type === "code_test") contentBody = <CodeCompiler lesson={activeLesson} />;
+        else if (activeLesson.type === "code_test" || String(activeLesson.type || "").includes("code") || String(activeLesson.type || "").includes("coding")) {
+            contentBody = (
+                <div className="p-10 text-center flex flex-col items-center justify-center h-full text-slate-500">
+                    <AlertCircle size={48} className="text-slate-400 mb-4" />
+                    <h2 className="text-xl font-bold text-slate-700">Coding lessons are unavailable</h2>
+                    <p className="text-sm mt-1">This lesson type is no longer supported on this platform.</p>
+                </div>
+            );
+        }
         else if (activeLesson.type === "assignment") {
             contentBody = (
                 <div className="flex flex-col items-center justify-center h-full bg-[#F8FAFC] p-8 font-sans text-slate-800">
@@ -1482,8 +864,6 @@ const CoursePlayer = () => {
     }
 
     if (loading) return <div>Loading...</div>;
-    if (course?.course_type === "coding") return <CodingPlayer course={course} token={localStorage.getItem("token") || ""} />;
-
     return (
         <div className="flex h-screen w-screen overflow-hidden font-sans bg-slate-900 relative">
             <ToastNotification toast={toast} setToast={setToast} />
@@ -1544,7 +924,6 @@ const CoursePlayer = () => {
                                                                     {lesson.type.includes("video") && <PlayCircle size={16} />}
                                                                     {lesson.type === "note" && <FileText size={16} />}
                                                                     {lesson.type === "quiz" && <HelpCircle size={16} />}
-                                                                    {lesson.type.includes("code") && <Code size={16} />}
                                                                     {lesson.type === "assignment" && <UploadCloud size={16} />}
                                                                     {lesson.type === "live_class" && <Radio size={16} />}
                                                                 </>
@@ -1610,34 +989,16 @@ const CoursePlayer = () => {
                                 />
                             </div>
 
-                            <div className="flex gap-4">
-                                {/* Price */}
-                                <div className="flex-1">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Price (INR)</label>
-                                    <div className="relative">
-                                        <span className="absolute left-3 top-3 text-slate-400 font-bold">₹</span>
-                                        <input
-                                            type="number"
-                                            value={editForm.price}
-                                            onChange={e => setEditForm({ ...editForm, price: parseInt(e.target.value) })}
-                                            className="w-full pl-8 p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0A0A0A]"
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Language */}
-                                <div className="flex-1">
-                                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Language</label>
-                                    <select
-                                        value={editForm.language}
-                                        onChange={e => setEditForm({ ...editForm, language: e.target.value })}
-                                        className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0A0A0A]"
-                                    >
-                                        <option value="python">Python</option>
-                                        <option value="java">Java</option>
-                                        <option value="cpp">C++</option>
-                                        <option value="javascript">JavaScript</option>
-                                    </select>
+                            <div>
+                                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Price (INR)</label>
+                                <div className="relative">
+                                    <span className="absolute left-3 top-3 text-slate-400 font-bold">₹</span>
+                                    <input
+                                        type="number"
+                                        value={editForm.price}
+                                        onChange={e => setEditForm({ ...editForm, price: parseInt(e.target.value) })}
+                                        className="w-full pl-8 p-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#0A0A0A]"
+                                    />
                                 </div>
                             </div>
 
