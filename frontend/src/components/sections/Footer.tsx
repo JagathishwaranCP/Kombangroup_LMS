@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { Facebook, Instagram, Linkedin, Youtube } from "lucide-react";
-import { brand, footer } from "../../data/content";
+import { brand, footer, nav } from "../../data/content";
 import type { SocialNetwork } from "../../data/content";
 import { XIcon } from "../ui/BrandIcons";
 import Container from "../ui/Container";
@@ -15,32 +15,56 @@ const socialIcons: Record<SocialNetwork, ReactNode> = {
 };
 
 const Footer = () => (
-  <footer className="bg-black pt-16 text-body-dark">
+  <footer className="bg-black pt-10 text-body-dark md:pt-12">
     <Container>
-      <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <div className="grid gap-10 md:grid-cols-[1.4fr_1fr_1fr] md:gap-8">
         <div>
-          <Logo />
-          <p className="mt-4 max-w-[340px] text-sm font-light leading-relaxed tracking-wide">
+          <Logo showName tone="dark" />
+          <p className="mt-3 max-w-[340px] text-sm font-light leading-relaxed tracking-wide">
             {brand.description}
           </p>
         </div>
-        <ul className="flex flex-wrap gap-2.5">
-          {footer.socials.map((social) => (
-            <li key={social.network}>
-              <a
-                href={social.href}
-                aria-label={social.label}
-                className="grid size-9 place-items-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-indigo"
-              >
-                {socialIcons[social.network]}
-              </a>
-            </li>
-          ))}
-        </ul>
+
+        <nav aria-label={footer.navigationLabel}>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
+            {footer.navigationLabel}
+          </h3>
+          <ul className="mt-4 space-y-2.5">
+            {nav.links.map((link) => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  className="text-sm transition-colors duration-200 hover:text-white"
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+
+        <div>
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-white">
+            {footer.socialLabel}
+          </h3>
+          <ul className="mt-4 flex flex-wrap gap-2.5">
+            {footer.socials.map((social) => (
+              <li key={social.network}>
+                <a
+                  href={social.href}
+                  aria-label={social.label}
+                  className="grid size-9 place-items-center rounded-full bg-white/10 text-white transition-colors duration-200 hover:bg-indigo"
+                >
+                  {socialIcons[social.network]}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
       {/* Extra bottom padding keeps the legal links clear of the floating contact button. */}
-      <div className="mt-12 flex flex-col gap-3 border-t border-white/10 pb-20 pt-6 text-[13px] tracking-wide md:flex-row md:items-center md:justify-between">
+      <div className="mt-8 flex flex-col gap-3 border-t border-white/10 pb-16 pt-5 text-[13px] tracking-wide md:flex-row md:items-center md:justify-between">
         <p>
           © {new Date().getFullYear()} {brand.name}. {footer.rights}
         </p>

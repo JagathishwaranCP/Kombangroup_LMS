@@ -39,7 +39,7 @@ const InlineForm = ({
       role={type === "search" ? "search" : undefined}
       onSubmit={handleSubmit}
       className={cn(
-        "flex rounded-md bg-white p-1.5 ring-electric ring-offset-2 ring-offset-primary focus-within:ring-2",
+        "flex rounded-md border border-border bg-white p-1.5 shadow-sm ring-electric ring-offset-2 ring-offset-white focus-within:ring-2",
         className,
       )}
     >

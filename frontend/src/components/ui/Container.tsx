@@ -6,8 +6,9 @@ interface ContainerProps {
   className?: string;
 }
 
+/** Shared page width so navbar, hero copy and banner share the same edges. */
 const Container = ({ children, className }: ContainerProps) => (
-  <div className={cn("mx-auto w-full px-5 md:px-8 lg:px-12 xl:px-16", className)}>{children}</div>
+  <div className={cn("container", className)}>{children}</div>
 );
 
 export default Container;

@@ -14,7 +14,7 @@ const LiveClasses = () => {
   const active = liveClasses.items.find((item) => item.id === activeId) ?? liveClasses.items[0];
 
   return (
-    <section id="live-classes" aria-labelledby="live-classes-title" className="bg-panel py-20 md:py-28">
+    <section id="live-classes" aria-labelledby="live-classes-title" className="bg-panel py-12 md:py-16">
       <Container>
         <Reveal>
           <SectionHeading
@@ -25,9 +25,9 @@ const LiveClasses = () => {
           />
         </Reveal>
 
-        <div className="mt-12 grid items-center gap-8 lg:grid-cols-[1fr_1.3fr]">
+        <div className="mt-8 grid items-center gap-6 lg:grid-cols-[1fr_1.3fr]">
           <Reveal className="order-last lg:order-none">
-            <ul aria-label={liveClasses.listLabel} className="space-y-4">
+            <ul aria-label={liveClasses.listLabel} className="space-y-3">
               {liveClasses.items.map((item) => {
                 const isActive = item.id === active.id;
                 return (

@@ -6,8 +6,8 @@ import Reveal from "../ui/Reveal";
 import SectionHeading from "../ui/SectionHeading";
 
 const About = () => (
-  <section id="about" aria-labelledby="about-title" className="bg-white py-20 md:py-28">
-    <Container className="grid items-center gap-16 lg:grid-cols-2">
+  <section id="about" aria-labelledby="about-title" className="bg-white py-12 md:py-16">
+    <Container className="grid items-center gap-10 lg:grid-cols-2">
       <Reveal className="relative mx-auto w-full max-w-[460px]">
         <Dot className="right-0 top-0 size-[7.25rem] -translate-y-[38%] translate-x-[10%] bg-electric-grad md:size-[9.25rem] md:-translate-y-[36%] md:translate-x-[16%]" />
         <img
@@ -34,7 +34,7 @@ const About = () => (
           description={about.description}
         />
 
-        <ul className="mt-8 space-y-6">
+        <ul className="mt-6 space-y-4">
           {about.features.map(({ icon: Icon, title, description }) => (
             <li key={title} className="flex items-start gap-4">
               <span className="grid size-12 shrink-0 place-items-center rounded-full bg-electric-grad text-white">
@@ -48,7 +48,7 @@ const About = () => (
           ))}
         </ul>
 
-        <Button href={about.cta.href} variant="outline" className="mt-9">
+        <Button href={about.cta.href} variant="outline" className="mt-6">
           {about.cta.label}
         </Button>
       </Reveal>

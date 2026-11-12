@@ -46,14 +46,14 @@ const avatar = (id: string, alt: string): ImageAsset => ({
 
 /* ------------------------------------------------------------------ brand */
 
-const SUPPORT_EMAIL = "support@cloudconnekt.com";
+const SUPPORT_EMAIL = "support@cloudConnekt.com";
 const WHATSAPP_NUMBER = "919342202291";
 
 export const brand = {
-  name: "Cloud ConneKt",
-  homeLabel: "Cloud ConneKt home",
+  name: "CloudConnekt",
+  homeLabel: "CloudConnekt home",
   description:
-    "Cloud ConneKt is an online learning platform for upskilling and certification. Learn from experts, practise with real exam-style tests and earn credentials that move your career forward.",
+    "CloudConnekt is an online learning platform for upskilling and certification. Learn from experts, practise with real exam-style tests and earn credentials that move your career forward.",
 };
 
 export const skipLink = "Skip to main content";
@@ -61,34 +61,50 @@ export const skipLink = "Skip to main content";
 /* ----------------------------------------------------------------- navbar */
 
 export const nav = {
+  links: [
+    { label: "Home", href: "#home" },
+    { label: "Courses", href: "#courses" },
+    { label: "About", href: "#about" },
+    { label: "How It Works", href: "#process" },
+    { label: "Live Classes", href: "#live-classes" },
+    { label: "Testimonials", href: "#testimonials" },
+  ] satisfies LinkItem[],
+  menuLabel: "Open navigation",
+  closeLabel: "Close navigation",
   cta: { label: "Start Learning", to: "/login" },
 };
 
 /* ------------------------------------------------------------------- hero */
 
 export const hero = {
-  tag: "Smarter learning, powered online",
   title: {
-    line1: "Upgrade Your Skills.",
-    line2: "Get",
-    line2Accent: "Grow Your Career.",
-    circled: "Certified.",
+    line1: "Build Career-Ready Skills",
+    line2: "Earn Industry Certification",
+    line2Accent: "Advance With Confidence",
   },
   description:
-    "Expert-led online courses, practice exams and globally recognised certifications, all in one learning platform. Learn at your own pace, on any device, and earn credentials that employers trust.",
-  cta: { label: "Explore now", to: "/login" },
-  // /images/hero-student.png (keep this URL in sync with the preload in index.html)
-  image: {
-    src: photo("1544717305-2782549b5136", 600, 880),
-    alt: "Smiling student holding an orange notebook",
-    width: 600,
-    height: 880,
-  } satisfies ImageAsset,
-  stickers: {
-    notebook: "/images/hero-notebook.svg",
-    books: "/images/hero-books.svg",
-    pencils: "/images/hero-pencils.svg",
+    "Expert-led courses, structured practice and recognised credentials for working professionals. Learn online at your pace and progress with guidance you can trust.",
+  primaryCta: { label: "Browse Courses", href: "#courses" },
+  secondaryCta: {
+    label: "Talk to an Advisor",
+    href: `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}`,
   },
+  // Keep this path in sync with the preload in index.html
+  image: {
+    src: "/images/hero-instructor-engaged.jpg",
+    alt: "Professional instructor leading an interactive training session with engaged professionals",
+    width: 1600,
+    height: 900,
+  } satisfies ImageAsset,
+  mediaCaption: {
+    title: "Live expert sessions",
+    subtitle: "Interactive learning with real-world practice",
+  },
+  mediaStats: [
+    { value: "10K+", label: "Learners" },
+    { value: "95%", label: "Pass rate" },
+    { value: "50+", label: "Courses" },
+  ],
 };
 
 /* ----------------------------------------------------------- achievements */
@@ -104,7 +120,7 @@ export const achievements = {
   tag: "Our Impact",
   title: ["Learners Who Grew With Us"],
   description:
-    "Learners across India, the UAE, the UK, Canada, Nepal and beyond use Cloud ConneKt to build new skills, pass certification exams and move ahead in their careers.",
+    "Learners across India, the UAE, the UK, Canada, Nepal and beyond use CloudConnekt to build new skills, pass certification exams and move ahead in their careers.",
   stats: [
     { icon: ClipboardCheck, value: 10, suffix: "K+", label: "Learners Trained" },
     { icon: Award, value: 95, suffix: "%", label: "Exam Pass Rate" },
@@ -135,13 +151,31 @@ const courseImage = {
   },
   classroom: {
     src: photo("1588072432836-e10032774350", 640, 480),
-    alt: "Child writing in a workbook at a classroom desk",
+    alt: "Professionals collaborating in a classroom session",
     width: 640,
     height: 480,
   },
   laptop: {
     src: photo("1513258496099-48168024aec0", 640, 480),
     alt: "Man with headphones studying at a laptop",
+    width: 640,
+    height: 480,
+  },
+  workshop: {
+    src: photo("1524178232363-1fb2b075b655", 640, 480),
+    alt: "Instructor presenting to professionals in a workshop",
+    width: 640,
+    height: 480,
+  },
+  meeting: {
+    src: photo("1552664730-d307ca884978", 640, 480),
+    alt: "Team discussing strategy around a conference table",
+    width: 640,
+    height: 480,
+  },
+  coding: {
+    src: photo("1516321318423-f06f85e504b3", 640, 480),
+    alt: "Professional working on a laptop in a modern office",
     width: 640,
     height: 480,
   },
@@ -174,10 +208,34 @@ export const featuredCourses = {
     {
       title: "PRINCE2 Agile®",
       category: "Management Frameworks",
-      lessons: "",
+      lessons: "20 Lessons",
       students: "Mock Exams",
       rating: "",
       image: courseImage.laptop,
+    },
+    {
+      title: "Agile Scrum Master",
+      category: "Agile & Delivery",
+      lessons: "22 Lessons",
+      students: "Mock Exams",
+      rating: "",
+      image: courseImage.workshop,
+    },
+    {
+      title: "AWS Cloud Practitioner",
+      category: "Cloud Computing",
+      lessons: "28 Lessons",
+      students: "Mock Exams",
+      rating: "",
+      image: courseImage.meeting,
+    },
+    {
+      title: "DevOps Foundation",
+      category: "Cloud Computing",
+      lessons: "26 Lessons",
+      students: "Mock Exams",
+      rating: "",
+      image: courseImage.coding,
     },
   ] satisfies Course[],
 };
@@ -185,10 +243,10 @@ export const featuredCourses = {
 /* ------------------------------------------------------------------ about */
 
 export const about = {
-  tag: "About Cloud ConneKt",
+  tag: "About Cloud Connekt",
   title: ["Learning That Leads", "to Real Results"],
   description:
-    "Cloud ConneKt is an online learning platform built for professionals and students who want to grow. We bring together experienced trainers, carefully structured courses and certification-focused practice, so you don’t just learn the topic, you prove it.",
+    "Cloud Connekt is an online learning platform built for professionals and students who want to grow. We bring together experienced trainers, carefully structured courses and certification-focused practice, so you don’t just learn the topic, you prove it.",
   badge: { value: "15+", label: "Years of Training Experience" },
   features: [
     {
@@ -221,9 +279,9 @@ export const about = {
 
 export const workingProcess = {
   tag: "How It Works",
-  title: ["Your Path From Learning", "to Certification"],
+  title: ["A Clear Path From Learning", "to Certification"],
   description:
-    "Getting certified with Cloud ConneKt is simple. Pick a course, learn your way and earn a credential that shows what you know.",
+    "Choose a programme, learn with structured guidance, practise with intent, and earn a credential that reflects what you know.",
   steps: [
     {
       icon: Search,
@@ -414,13 +472,13 @@ export const testimonials = {
 /* -------------------------------------------------------------------- cta */
 
 export const cta = {
-  title: "Ready to Upgrade Your Skills and Get",
+  title: "Ready to Strengthen Your Skills and Get",
   titleAccent: "Certified?",
   description:
-    "Join thousands of learners building their careers with Cloud ConneKt. Get course updates, free resources and exclusive offers straight to your inbox.",
+    "Join professionals advancing their careers with Cloud Connekt. Receive course updates, learning resources and offers directly in your inbox.",
   form: {
     label: "Email address",
-    placeholder: "Enter your email address",
+    placeholder: "Enter your work email",
     button: "Get Started",
   },
 };
@@ -438,6 +496,8 @@ export const footer = {
     { network: "linkedin", label: "LinkedIn", href: "#" },
     { network: "youtube", label: "YouTube", href: "#" },
   ] satisfies { network: SocialNetwork; label: string; href: string }[],
+  navigationLabel: "Navigation",
+  socialLabel: "Follow us",
   rights: "A brand of Komban Consulting Private Limited. All rights reserved.",
   legalLabel: "Legal",
   legal: [

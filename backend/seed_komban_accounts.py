@@ -29,6 +29,20 @@ ACCOUNTS = [
         "role": "student",
         "phone_number": "9000000002",
     },
+    {
+        "email": "admin@cloudconnekt.com",
+        "password": "Admin@123",
+        "full_name": "CloudConnekt Admin",
+        "role": "instructor",
+        "phone_number": "9000000011",
+    },
+    {
+        "email": "user@cloudconnekt.com",
+        "password": "User@123",
+        "full_name": "CloudConnekt User",
+        "role": "student",
+        "phone_number": "9000000012",
+    },
 ]
 
 

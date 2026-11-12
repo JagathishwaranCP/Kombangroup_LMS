@@ -1,121 +1,94 @@
 import { hero } from "../../data/content";
-import { cn } from "../../utils/cn";
-import CrossShape from "../decor/CrossShape";
-import DashedPath from "../decor/DashedPath";
-import DotGrid from "../decor/DotGrid";
-import HandDrawnEllipse from "../decor/HandDrawnEllipse";
-import PaperPlane from "../decor/PaperPlane";
-import { BlobGradient, Dot, HalfCircle } from "../decor/Shapes";
 import Button from "../ui/Button";
 import Container from "../ui/Container";
-import PersonFigure from "../ui/PersonFigure";
-import SectionTag from "../ui/SectionTag";
-
-interface StickerProps {
-  src: string;
-  /** Position and size of the floating wrapper. */
-  className: string;
-  /** Tilt for the image; kept off the wrapper so it survives the float animation. */
-  tilt: string;
-  delay: string;
-}
-
-const Sticker = ({ src, className, tilt, delay }: StickerProps) => (
-  <span
-    aria-hidden="true"
-    className={cn("pointer-events-none absolute block animate-float", className)}
-    style={{ animationDelay: delay }}
-  >
-    <img src={src} alt="" className={cn("h-auto w-full drop-shadow-[0_10px_16px_rgba(0,0,0,0.35)]", tilt)} />
-  </span>
-);
 
 const Hero = () => {
   return (
-    <section id="home" aria-labelledby="hero-title" className="overflow-hidden bg-primary">
-      <Container className="relative">
-        <CrossShape className="-left-2 top-1 hidden size-11 text-electric/30 lg:block" />
-
-        <div className="relative flex min-h-[620px] flex-col pt-20">
-          <div className="grid flex-1 grid-cols-1 items-center gap-10 pb-12 pt-6 md:grid-cols-2 md:gap-6 lg:gap-8">
-            <div className="text-center md:text-left">
-              <SectionTag tone="dark">{hero.tag}</SectionTag>
-              <h1
-                id="hero-title"
-                className="mt-5 text-[32px] font-extrabold leading-[1.15] tracking-tight text-white sm:text-[36px] md:text-[34px] lg:text-[40px] xl:text-[48px]"
+    <section
+      id="home"
+      aria-labelledby="hero-title"
+      className="overflow-hidden bg-gradient-to-b from-white via-[#F4F7FC] to-bg"
+    >
+      <Container>
+        <div className="grid grid-cols-1 items-center gap-6 pb-6 pt-20 md:gap-8 md:pb-8 md:pt-24 lg:grid-cols-2 lg:gap-10 lg:pb-10 lg:pt-24">
+          <div className="flex w-full max-w-[540px] flex-col items-start text-left">
+            <h1
+              id="hero-title"
+              className="text-[30px] font-bold leading-[1.28] tracking-tight text-navy sm:text-[34px] lg:text-[40px]"
+            >
+              <span className="block">{hero.title.line1}</span>
+              <span className="block">{hero.title.line2}</span>
+              <span className="block text-indigo">{hero.title.line2Accent}</span>
+            </h1>
+            <p className="mt-3 max-w-[480px] text-[15px] font-normal leading-relaxed text-body md:text-base">
+              {hero.description}
+            </p>
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Button href={hero.primaryCta.href}>{hero.primaryCta.label}</Button>
+              <Button
+                href={hero.secondaryCta.href}
+                variant="outline"
+                external
+                className="normal-case tracking-normal"
               >
-                <span className="block">{hero.title.line1}</span>
-                <span className="block">
-                  {hero.title.line2}{" "}
-                  <span className="relative inline-block">
-                    {hero.title.circled}
-                    <HandDrawnEllipse />
-                  </span>
-                </span>
-                <span className="block text-electric-light">{hero.title.line2Accent}</span>
-              </h1>
-              <p className="mx-auto mt-6 max-w-[440px] text-sm font-light leading-relaxed tracking-wide text-white/75 md:mx-0 md:text-[15px]">
-                {hero.description}
-              </p>
-              <Button to={hero.cta.to} className="mt-8">
-                {hero.cta.label}
+                {hero.secondaryCta.label}
               </Button>
             </div>
+          </div>
 
-            <div className="relative mx-auto h-[360px] w-full max-w-[360px] md:max-w-none lg:h-[460px] xl:h-[500px]">
-              <DotGrid
-                cols={12}
-                rows={12}
-                gap={14}
-                radius={2}
-                className="right-0 top-4 text-electric/25 lg:right-4"
-              />
-              <BlobGradient className="left-1/2 top-1/2 size-[300px] -translate-x-1/2 -translate-y-1/2 lg:size-[420px]" />
-              <HalfCircle className="bottom-2 left-[6%] w-24 -rotate-45 bg-indigo lg:left-[10%] lg:w-32" />
+          <div className="relative w-full">
+            <div
+              aria-hidden="true"
+              className="absolute -inset-4 rounded-[32px] bg-gradient-to-br from-electric/20 via-indigo/15 to-transparent blur-2xl"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -right-3 top-8 hidden h-24 w-24 rounded-full bg-indigo/10 blur-xl lg:block"
+            />
+            <div
+              aria-hidden="true"
+              className="absolute -bottom-2 -left-2 hidden h-20 w-20 rounded-full bg-electric/15 blur-xl lg:block"
+            />
 
-              <PersonFigure
-                image={hero.image}
-                priority
-                className="absolute bottom-0 left-1/2 h-[320px] w-[220px] -translate-x-1/2 lg:h-[400px] lg:w-[272px] xl:h-[440px] xl:w-[300px]"
-              />
+            <figure className="relative overflow-hidden rounded-[24px] border border-border/80 bg-white shadow-card-hover">
+              <div className="relative aspect-[16/10] overflow-hidden">
+                <img
+                  src={hero.image.src}
+                  alt={hero.image.alt}
+                  width={hero.image.width}
+                  height={hero.image.height}
+                  loading="eager"
+                  fetchPriority="high"
+                  decoding="async"
+                  className="h-full w-full scale-[1.02] object-cover object-[center_35%] transition-transform duration-700 ease-out hover:scale-105"
+                />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy/75 via-navy/15 to-transparent"
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                  <p className="text-sm font-semibold text-white sm:text-base">
+                    {hero.mediaCaption.title}
+                  </p>
+                  <p className="mt-0.5 text-xs text-white/80 sm:text-sm">
+                    {hero.mediaCaption.subtitle}
+                  </p>
+                </figcaption>
+              </div>
 
-              <DashedPath
-                d="M4 86C30 20 90 62 144 8"
-                className="right-2 top-0 hidden w-32 sm:block lg:w-40"
-              />
-              <PaperPlane className="-top-3 right-0 hidden size-6 sm:block" />
-              <DashedPath
-                d="M146 6C112 72 50 22 6 82"
-                className="bottom-16 left-0 hidden w-28 sm:block lg:w-36"
-              />
-              <PaperPlane
-                className="bottom-12 left-[-6px] hidden size-6 sm:block"
-                iconClassName="rotate-180"
-              />
-
-              <Sticker
-                src={hero.stickers.notebook}
-                className="left-0 top-6 w-16 lg:left-2 lg:w-24"
-                tilt="-rotate-12"
-                delay="0s"
-              />
-              <Sticker
-                src={hero.stickers.books}
-                className="bottom-6 right-0 hidden w-20 sm:block lg:w-28"
-                tilt="rotate-6"
-                delay="-2s"
-              />
-              <Sticker
-                src={hero.stickers.pencils}
-                className="right-1 top-[34%] hidden w-14 sm:block lg:w-20"
-                tilt="rotate-12"
-                delay="-4s"
-              />
-
-              <Dot className="left-[22%] top-2 size-2.5 bg-electric-light" />
-              <Dot className="left-1 top-[52%] size-2 bg-electric" />
-              <Dot className="bottom-[30%] right-[4%] size-3 bg-indigo" />
-            </div>
+              <ul className="grid grid-cols-3 divide-x divide-border border-t border-border bg-[#FBFCFE]">
+                {hero.mediaStats.map((stat) => (
+                  <li key={stat.label} className="px-3 py-3 text-center sm:px-4 sm:py-4">
+                    <p className="text-base font-bold tracking-tight text-navy sm:text-lg">
+                      {stat.value}
+                    </p>
+                    <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-body sm:text-xs">
+                      {stat.label}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </figure>
           </div>
         </div>
       </Container>

@@ -17,17 +17,19 @@ interface ButtonProps {
   to?: string;
   /** Anchor or external URL: renders a plain link. */
   href?: string;
+  /** Opens the href in a new tab when set. */
+  external?: boolean;
   type?: "button" | "submit";
   onClick?: () => void;
 }
 
 const base =
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md font-semibold transition-colors duration-200";
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-[10px] font-semibold transition-colors duration-200";
 
 const variants: Record<Variant, string> = {
   // Indigo, as on the site's "Login" button.
   primary: "bg-indigo text-white hover:bg-indigo-hover",
-  // Indigo outline, as on the site's "Coaching with CloudConneKt" button.
+  // Indigo outline, as on the site's "Coaching with CloudConnekt" button.
   outline:
     "border-2 border-indigo-deep uppercase tracking-wider text-navy hover:border-indigo hover:bg-indigo hover:text-white",
 };
@@ -45,6 +47,7 @@ const Button = ({
   className,
   to,
   href,
+  external = false,
   type = "button",
   onClick,
 }: ButtonProps) => {
@@ -66,7 +69,12 @@ const Button = ({
 
   if (href) {
     return (
-      <a href={href} className={classes} onClick={onClick}>
+      <a
+        href={href}
+        className={classes}
+        onClick={onClick}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
         {content}
       </a>
     );

@@ -31,9 +31,9 @@ const Testimonials = () => {
     <section
       id="testimonials"
       aria-labelledby="testimonials-title"
-      className="overflow-hidden bg-bg-grey py-20 md:py-28"
+      className="overflow-hidden bg-[#F7F9FC] py-12 md:py-16"
     >
-      <Container className="grid items-center gap-16 lg:grid-cols-[1.15fr_0.85fr]">
+      <Container className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
         <Reveal className="order-last lg:order-none">
           <SectionHeading
             id="testimonials-title"
@@ -42,7 +42,7 @@ const Testimonials = () => {
             title={testimonials.title}
           />
 
-          <div className="mt-8 rounded-xl bg-primary-card p-8 shadow-card-dark">
+          <div className="mt-6 rounded-xl border border-border bg-white p-6 shadow-card sm:p-7">
             {/* All quotes share one grid cell, so the card keeps the height of the
                 longest one and the avatar buttons never move when switching. */}
             <div className="grid">
@@ -57,14 +57,14 @@ const Testimonials = () => {
                       isActive ? "visible opacity-100" : "invisible opacity-0",
                     )}
                   >
-                    <p className="text-[13px] tracking-wide text-body-dark">{item.origin}</p>
-                    <blockquote className="mt-3 text-sm font-light leading-relaxed tracking-wide text-white md:text-[15px]">
+                    <p className="text-[13px] tracking-wide text-body">{item.origin}</p>
+                    <blockquote className="mt-3 text-sm font-normal leading-relaxed tracking-wide text-navy md:text-[15px]">
                       “{item.quote}”
                     </blockquote>
                     <figcaption className="mt-5">
-                      <span className="block font-semibold text-gold">{item.name}</span>
+                      <span className="block font-semibold text-indigo">{item.name}</span>
                       {item.role && (
-                        <span className="block text-[13px] tracking-wide text-body-dark">{item.role}</span>
+                        <span className="block text-[13px] tracking-wide text-body">{item.role}</span>
                       )}
                     </figcaption>
                   </figure>
@@ -72,7 +72,7 @@ const Testimonials = () => {
               })}
             </div>
 
-            <div role="group" aria-label={testimonials.switcherLabel} className="mt-6 flex h-14 items-center gap-4">
+            <div role="group" aria-label={testimonials.switcherLabel} className="mt-5 flex h-12 items-center gap-3">
               {testimonials.items.map((item, index) => {
                 const isActive = index === activeIndex;
                 return (
@@ -85,7 +85,7 @@ const Testimonials = () => {
                     className={cn(
                       "shrink-0 overflow-hidden rounded-full transition-all duration-200",
                       isActive
-                        ? "size-[52px] ring-2 ring-gold ring-offset-2 ring-offset-primary-card"
+                        ? "size-[52px] ring-2 ring-indigo ring-offset-2 ring-offset-white"
                         : "size-10 opacity-70 hover:opacity-100",
                     )}
                   >
@@ -105,9 +105,9 @@ const Testimonials = () => {
           </div>
         </Reveal>
 
-        <Reveal delay={0.1} className="relative mx-auto size-[280px] sm:size-[340px]">
-          <Dot className="-left-5 -top-3 size-24 bg-electric-grad" />
-          <Dot className="-bottom-5 -right-5 size-40 bg-primary" />
+        <Reveal delay={0.1} className="relative mx-auto size-[240px] sm:size-[300px]">
+          <Dot className="-left-4 -top-2 size-20 bg-electric/20" />
+          <Dot className="-bottom-4 -right-4 size-32 bg-indigo/15" />
           <AnimatePresence mode="wait" initial={false}>
             <motion.img
               key={active.name}
