@@ -14,7 +14,7 @@ const Hero = () => {
           <div className="flex w-full min-w-0 flex-col items-stretch text-left sm:items-start">
             <h1
               id="hero-title"
-              className="text-[clamp(1.5rem,3.2vw+0.6rem,3rem)] font-bold leading-[1.22] tracking-tight text-navy"
+              className="text-[clamp(1.45rem,2.8vw+0.55rem,2.65rem)] font-bold leading-[1.22] tracking-tight text-navy"
             >
               <span className="block">{hero.title.line1}</span>
               <span className="block">{hero.title.line2}</span>
