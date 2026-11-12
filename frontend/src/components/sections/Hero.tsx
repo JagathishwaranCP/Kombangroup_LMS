@@ -10,48 +10,42 @@ const Hero = () => {
       className="overflow-hidden bg-gradient-to-b from-white via-[#F4F7FC] to-bg"
     >
       <Container>
-        <div className="grid grid-cols-1 items-center gap-6 pb-6 pt-20 md:gap-8 md:pb-8 md:pt-24 lg:grid-cols-2 lg:gap-10 lg:pb-10 lg:pt-24">
-          <div className="flex w-full max-w-[540px] flex-col items-start text-left">
+        <div className="grid grid-cols-1 items-center gap-6 pb-8 pt-[5.5rem] sm:gap-8 sm:pb-10 sm:pt-24 md:gap-10 md:pb-12 md:pt-28 lg:grid-cols-2 lg:gap-10 lg:pb-14 lg:pt-28">
+          <div className="flex w-full max-w-xl flex-col items-stretch text-left sm:items-start">
             <h1
               id="hero-title"
-              className="text-[30px] font-bold leading-[1.28] tracking-tight text-navy sm:text-[34px] lg:text-[40px]"
+              className="text-[clamp(1.5rem,4.6vw,2.5rem)] font-bold leading-[1.25] tracking-tight text-navy"
             >
               <span className="block">{hero.title.line1}</span>
               <span className="block">{hero.title.line2}</span>
               <span className="block text-indigo">{hero.title.line2Accent}</span>
             </h1>
-            <p className="mt-3 max-w-[480px] text-[15px] font-normal leading-relaxed text-body md:text-base">
+            <p className="mt-3 max-w-lg text-[0.9375rem] font-normal leading-relaxed text-body sm:mt-4 md:text-base">
               {hero.description}
             </p>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <Button href={hero.primaryCta.href}>{hero.primaryCta.label}</Button>
+            <div className="mt-5 flex w-full flex-col gap-3 sm:mt-6 sm:w-auto sm:flex-row sm:flex-wrap">
+              <Button href={hero.primaryCta.href} className="w-full sm:w-auto">
+                {hero.primaryCta.label}
+              </Button>
               <Button
                 href={hero.secondaryCta.href}
                 variant="outline"
                 external
-                className="normal-case tracking-normal"
+                className="w-full normal-case tracking-normal sm:w-auto"
               >
                 {hero.secondaryCta.label}
               </Button>
             </div>
           </div>
 
-          <div className="relative w-full">
+          <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
             <div
               aria-hidden="true"
-              className="absolute -inset-4 rounded-[32px] bg-gradient-to-br from-electric/20 via-indigo/15 to-transparent blur-2xl"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute -right-3 top-8 hidden h-24 w-24 rounded-full bg-indigo/10 blur-xl lg:block"
-            />
-            <div
-              aria-hidden="true"
-              className="absolute -bottom-2 -left-2 hidden h-20 w-20 rounded-full bg-electric/15 blur-xl lg:block"
+              className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-electric/20 via-indigo/15 to-transparent blur-2xl sm:-inset-4 sm:rounded-[32px]"
             />
 
-            <figure className="relative overflow-hidden rounded-[24px] border border-border/80 bg-white shadow-card-hover">
-              <div className="relative aspect-[16/10] overflow-hidden">
+            <figure className="relative overflow-hidden rounded-2xl border border-border/80 bg-white shadow-card-hover sm:rounded-[24px]">
+              <div className="relative aspect-[16/11] overflow-hidden sm:aspect-[16/10]">
                 <img
                   src={hero.image.src}
                   alt={hero.image.alt}
@@ -60,17 +54,17 @@ const Hero = () => {
                   loading="eager"
                   fetchPriority="high"
                   decoding="async"
-                  className="h-full w-full scale-[1.02] object-cover object-[center_35%] transition-transform duration-700 ease-out hover:scale-105"
+                  className="h-full w-full object-cover object-[center_35%] transition-transform duration-700 ease-out hover:scale-105"
                 />
                 <div
                   aria-hidden="true"
                   className="pointer-events-none absolute inset-0 bg-gradient-to-t from-navy/75 via-navy/15 to-transparent"
                 />
-                <figcaption className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                <figcaption className="absolute inset-x-0 bottom-0 p-3 sm:p-5">
                   <p className="text-sm font-semibold text-white sm:text-base">
                     {hero.mediaCaption.title}
                   </p>
-                  <p className="mt-0.5 text-xs text-white/80 sm:text-sm">
+                  <p className="mt-0.5 text-[11px] text-white/80 sm:text-sm">
                     {hero.mediaCaption.subtitle}
                   </p>
                 </figcaption>
@@ -78,11 +72,11 @@ const Hero = () => {
 
               <ul className="grid grid-cols-3 divide-x divide-border border-t border-border bg-[#FBFCFE]">
                 {hero.mediaStats.map((stat) => (
-                  <li key={stat.label} className="px-3 py-3 text-center sm:px-4 sm:py-4">
-                    <p className="text-base font-bold tracking-tight text-navy sm:text-lg">
+                  <li key={stat.label} className="px-1.5 py-2.5 text-center sm:px-4 sm:py-4">
+                    <p className="text-sm font-bold tracking-tight text-navy sm:text-lg">
                       {stat.value}
                     </p>
-                    <p className="mt-0.5 text-[11px] font-medium uppercase tracking-wide text-body sm:text-xs">
+                    <p className="mt-0.5 text-[10px] font-medium uppercase tracking-wide text-body sm:text-xs">
                       {stat.label}
                     </p>
                   </li>

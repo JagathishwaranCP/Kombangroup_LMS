@@ -10,9 +10,7 @@ import Logo from "../ui/Logo";
 const STICKY_AFTER = 48;
 
 /**
- * On the home hero the logo sits large with the CTA.
- * After scroll it moves into a compact sticky top bar.
- * Section links jump to the matching home-page anchors.
+ * Responsive top bar: compact on phones, full section links from xl up.
  */
 const Navbar = () => {
   const menuId = useId();
@@ -33,8 +31,12 @@ const Navbar = () => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") setMenuOpen(false);
     };
+    document.body.style.overflow = "hidden";
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [menuOpen]);
 
   const closeMenu = () => setMenuOpen(false);
@@ -50,31 +52,39 @@ const Navbar = () => {
     >
       <Container
         className={cn(
-          "flex items-center justify-between gap-3 transition-[height] duration-300 ease-out",
-          scrolled ? "h-16" : "h-24 sm:h-28",
+          "flex items-center justify-between gap-2 sm:gap-3 transition-[height] duration-300 ease-out",
+          scrolled ? "h-14 sm:h-16" : "h-[4.5rem] sm:h-20 md:h-24",
         )}
       >
         <Logo size={scrolled ? "md" : "lg"} showName />
 
-        <nav aria-label="Section navigation" className="hidden items-center gap-1 lg:flex">
+        <nav
+          aria-label="Section navigation"
+          className="hidden items-center gap-0.5 xl:flex"
+        >
           {nav.links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="rounded-[10px] px-3 py-2 text-sm font-medium text-body transition-colors duration-200 hover:bg-panel hover:text-navy"
+              className="rounded-[10px] px-2.5 py-2 text-[13px] font-medium text-body transition-colors duration-200 hover:bg-panel hover:text-navy 2xl:px-3 2xl:text-sm"
             >
               {link.label}
             </a>
           ))}
         </nav>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          <Button to={nav.cta.to} size="sm" className="max-sm:px-4">
-            {nav.cta.label}
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2.5">
+          <Button
+            to={nav.cta.to}
+            size="sm"
+            className="max-[380px]:px-3 max-[380px]:text-xs sm:max-xl:px-4"
+          >
+            <span className="max-[380px]:hidden">{nav.cta.label}</span>
+            <span className="min-[381px]:hidden">Login</span>
           </Button>
           <button
             type="button"
-            className="inline-flex size-10 items-center justify-center rounded-[10px] border border-border bg-white text-navy lg:hidden"
+            className="inline-flex size-9 items-center justify-center rounded-[10px] border border-border bg-white text-navy sm:size-10 xl:hidden"
             aria-expanded={menuOpen}
             aria-controls={menuId}
             aria-label={menuOpen ? nav.closeLabel : nav.menuLabel}
@@ -88,7 +98,7 @@ const Navbar = () => {
       <div
         id={menuId}
         hidden={!menuOpen}
-        className="border-t border-border bg-white lg:hidden"
+        className="max-h-[min(70vh,480px)] overflow-y-auto border-t border-border bg-white xl:hidden"
       >
         <Container className="py-3">
           <nav aria-label="Mobile section navigation" className="flex flex-col gap-1">
@@ -97,7 +107,7 @@ const Navbar = () => {
                 key={link.href}
                 href={link.href}
                 onClick={closeMenu}
-                className="rounded-[10px] px-3 py-2.5 text-sm font-medium text-navy transition-colors duration-200 hover:bg-panel"
+                className="rounded-[10px] px-3 py-3 text-sm font-medium text-navy transition-colors duration-200 hover:bg-panel"
               >
                 {link.label}
               </a>

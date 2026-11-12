@@ -14,7 +14,7 @@ const LiveClasses = () => {
   const active = liveClasses.items.find((item) => item.id === activeId) ?? liveClasses.items[0];
 
   return (
-    <section id="live-classes" aria-labelledby="live-classes-title" className="bg-panel py-12 md:py-16">
+    <section id="live-classes" aria-labelledby="live-classes-title" className="bg-panel py-10 sm:py-12 md:py-16">
       <Container>
         <Reveal>
           <SectionHeading
@@ -25,8 +25,8 @@ const LiveClasses = () => {
           />
         </Reveal>
 
-        <div className="mt-8 grid items-center gap-6 lg:grid-cols-[1fr_1.3fr]">
-          <Reveal className="order-last lg:order-none">
+        <div className="mt-6 grid items-center gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-[1fr_1.3fr]">
+          <Reveal className="order-last min-w-0 lg:order-none">
             <ul aria-label={liveClasses.listLabel} className="space-y-3">
               {liveClasses.items.map((item) => {
                 const isActive = item.id === active.id;
@@ -37,7 +37,7 @@ const LiveClasses = () => {
                       aria-pressed={isActive}
                       onClick={() => setActiveId(item.id)}
                       className={cn(
-                        "flex w-full items-center gap-4 rounded-xl border-l-[3px] bg-white p-3 text-left transition duration-200",
+                        "flex w-full items-center gap-3 rounded-xl border-l-[3px] bg-white p-2.5 text-left transition duration-200 sm:gap-4 sm:p-3",
                         isActive
                           ? "border-electric shadow-card-hover"
                           : "border-transparent shadow-card hover:-translate-y-1 hover:shadow-card-hover",
@@ -50,14 +50,14 @@ const LiveClasses = () => {
                         height={item.thumb.height}
                         loading="lazy"
                         decoding="async"
-                        className="h-16 w-20 shrink-0 rounded-lg object-cover"
+                        className="h-14 w-16 shrink-0 rounded-lg object-cover sm:h-16 sm:w-20"
                       />
                       <span className="min-w-0">
-                        <span className="block text-[15px] font-semibold leading-snug text-navy">{item.title}</span>
-                        <span className="block text-[15px] font-semibold leading-snug text-navy">
+                        <span className="block truncate text-sm font-semibold leading-snug text-navy sm:text-[15px]">{item.title}</span>
+                        <span className="block truncate text-sm font-semibold leading-snug text-navy sm:text-[15px]">
                           {item.subtitle}
                         </span>
-                        <span className="mt-1.5 flex items-center gap-4 text-[13px] tracking-wide text-body">
+                        <span className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs tracking-wide text-body sm:gap-4 sm:text-[13px]">
                           <span className="flex items-center gap-1.5">
                             <Star size={14} className="fill-gold text-gold" aria-hidden="true" />
                             <span className="sr-only">{liveClasses.ratingLabel}</span>
@@ -108,8 +108,8 @@ const LiveClasses = () => {
                 </span>
               </div>
 
-              <figcaption className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-4 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent p-4 pt-14">
-                <div className="flex min-w-0 items-center gap-3">
+              <figcaption className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 bg-gradient-to-t from-primary/90 via-primary/50 to-transparent p-3 pt-12 sm:gap-4 sm:p-4 sm:pt-14">
+                <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                   <img
                     src={active.host.avatar.src}
                     alt=""
@@ -117,24 +117,24 @@ const LiveClasses = () => {
                     height={active.host.avatar.height}
                     loading="lazy"
                     decoding="async"
-                    className="size-10 shrink-0 rounded-full object-cover ring-2 ring-white/70"
+                    className="size-8 shrink-0 rounded-full object-cover ring-2 ring-white/70 sm:size-10"
                   />
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">{active.host.name}</p>
-                    <p className="text-xs text-body-dark">{active.host.role}</p>
+                    <p className="truncate text-xs font-semibold text-white sm:text-sm">{active.host.name}</p>
+                    <p className="text-[10px] text-body-dark sm:text-xs">{active.host.role}</p>
                   </div>
                 </div>
 
                 {/* Mockup only: the call controls are decorative, not real buttons. */}
-                <div aria-hidden="true" className="flex shrink-0 items-center gap-2">
-                  <span className={cn(controlClass, "bg-white/20")}>
-                    <Mic size={18} />
+                <div aria-hidden="true" className="flex shrink-0 items-center gap-1.5 sm:gap-2">
+                  <span className={cn(controlClass, "size-8 bg-white/20 sm:size-10")}>
+                    <Mic size={16} />
                   </span>
-                  <span className={cn(controlClass, "bg-white/20")}>
-                    <Video size={18} />
+                  <span className={cn(controlClass, "size-8 bg-white/20 sm:size-10")}>
+                    <Video size={16} />
                   </span>
-                  <span className={cn(controlClass, "bg-red-600")}>
-                    <PhoneOff size={18} />
+                  <span className={cn(controlClass, "size-8 bg-red-600 sm:size-10")}>
+                    <PhoneOff size={16} />
                   </span>
                 </div>
               </figcaption>

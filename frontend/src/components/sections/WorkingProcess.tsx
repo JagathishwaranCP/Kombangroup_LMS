@@ -11,9 +11,9 @@ const { reviewCard, chart } = workingProcess;
 const maxHours = Math.max(...chart.bars.map((bar) => bar.hours));
 
 const WorkingProcess = () => (
-  <section id="process" aria-labelledby="process-title" className="overflow-hidden bg-white py-12 md:py-16">
+  <section id="process" aria-labelledby="process-title" className="overflow-hidden bg-white py-10 sm:py-12 md:py-16">
     <Container className="grid items-center gap-10 lg:grid-cols-2">
-      <Reveal>
+      <Reveal className="min-w-0">
         <SectionHeading
           id="process-title"
           align="left"
@@ -23,13 +23,15 @@ const WorkingProcess = () => (
           description={workingProcess.description}
         />
 
-        <ol className="mt-7 space-y-4">
+        <ol className="mt-6 space-y-4 sm:mt-7">
           {workingProcess.steps.map((step) => (
-            <li key={step.title} className="flex items-start gap-5">
-              <SlantedIconPanel icon={step.icon} />
-              <div className="pt-1">
-                <h3 className="text-base font-semibold uppercase tracking-wider text-navy">{step.title}</h3>
-                <p className="mt-1.5 max-w-[380px] text-sm font-normal leading-relaxed tracking-wide text-body">
+            <li key={step.title} className="flex items-start gap-3 sm:gap-5">
+              <SlantedIconPanel icon={step.icon} className="scale-90 sm:scale-100" />
+              <div className="min-w-0 pt-1">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-navy sm:text-base">
+                  {step.title}
+                </h3>
+                <p className="mt-1 max-w-[380px] text-sm font-normal leading-relaxed tracking-wide text-body sm:mt-1.5">
                   {step.description}
                 </p>
               </div>
@@ -40,17 +42,16 @@ const WorkingProcess = () => (
 
       <Reveal
         delay={0.1}
-        className="relative order-first mx-auto h-[380px] w-full max-w-[400px] lg:order-none lg:h-[420px]"
+        className="relative order-first mx-auto h-[300px] w-full max-w-[340px] sm:h-[360px] sm:max-w-[400px] lg:order-none lg:h-[420px]"
       >
-        <Dot className="left-[54%] top-1/2 size-[260px] -translate-x-1/2 -translate-y-1/2 bg-electric/15 lg:size-[320px]" />
+        <Dot className="left-[54%] top-1/2 size-[200px] -translate-x-1/2 -translate-y-1/2 bg-electric/15 sm:size-[260px] lg:size-[320px]" />
 
-        {/* Sits right of centre so the floating cards on the left stay clear of the face. */}
         <PersonFigure
           image={workingProcess.image}
-          className="absolute bottom-0 left-[58%] h-[320px] w-[220px] -translate-x-1/2 lg:left-[60%] lg:h-[380px] lg:w-[260px]"
+          className="absolute bottom-0 left-[58%] h-[250px] w-[170px] -translate-x-1/2 sm:h-[320px] sm:w-[220px] lg:left-[60%] lg:h-[380px] lg:w-[260px]"
         />
 
-        <div className="absolute left-0 top-0 flex animate-float items-center gap-3 rounded-xl border border-border bg-white p-3 pr-4 shadow-card">
+        <div className="absolute left-0 top-0 flex max-w-[70%] animate-float items-center gap-2 rounded-xl border border-border bg-white p-2 pr-3 shadow-card sm:max-w-none sm:gap-3 sm:p-3 sm:pr-4">
           <div className="flex -space-x-2">
             {reviewCard.avatars.map((avatar) => (
               <img
@@ -61,22 +62,22 @@ const WorkingProcess = () => (
                 height={avatar.height}
                 loading="lazy"
                 decoding="async"
-                className="size-8 rounded-full object-cover ring-2 ring-white"
+                className="size-6 rounded-full object-cover ring-2 ring-white sm:size-8"
               />
             ))}
           </div>
-          <div>
-            <p className="text-sm font-semibold leading-tight text-navy">
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold leading-tight text-navy sm:text-sm">
               {reviewCard.value} {reviewCard.label}
             </p>
-            <p className="mt-0.5 text-xs text-body">{reviewCard.caption}</p>
+            <p className="mt-0.5 truncate text-[10px] text-body sm:text-xs">{reviewCard.caption}</p>
           </div>
         </div>
 
-        <div className="absolute bottom-4 left-0 w-[196px] rounded-xl border border-border bg-white p-4 shadow-card">
-          <p className="text-sm font-semibold text-navy">{chart.title}</p>
-          <div role="img" aria-label={chart.summary} className="mt-3">
-            <div className="flex h-16 items-end gap-2">
+        <div className="absolute bottom-3 left-0 w-[150px] rounded-xl border border-border bg-white p-3 shadow-card sm:bottom-4 sm:w-[196px] sm:p-4">
+          <p className="text-xs font-semibold text-navy sm:text-sm">{chart.title}</p>
+          <div role="img" aria-label={chart.summary} className="mt-2 sm:mt-3">
+            <div className="flex h-12 items-end gap-1.5 sm:h-16 sm:gap-2">
               {chart.bars.map((bar, index) => (
                 <span
                   key={`${bar.day}-${index}`}
@@ -85,9 +86,9 @@ const WorkingProcess = () => (
                 />
               ))}
             </div>
-            <div className="mt-1.5 flex gap-2">
+            <div className="mt-1 flex gap-1.5 sm:mt-1.5 sm:gap-2">
               {chart.bars.map((bar, index) => (
-                <span key={`${bar.day}-${index}`} className="flex-1 text-center text-[10px] leading-none text-body">
+                <span key={`${bar.day}-${index}`} className="flex-1 text-center text-[9px] leading-none text-body sm:text-[10px]">
                   {bar.day}
                 </span>
               ))}

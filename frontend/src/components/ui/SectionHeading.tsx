@@ -28,7 +28,7 @@ const SectionHeading = ({
     <h2
       id={id}
       className={cn(
-        "mt-3 text-[26px] font-bold leading-tight md:text-[34px]",
+        "mt-3 text-[clamp(1.35rem,3.4vw,2.125rem)] font-bold leading-tight",
         tone === "dark" ? "text-white" : "text-navy",
       )}
     >
@@ -47,7 +47,7 @@ const SectionHeading = ({
     {description && (
       <p
         className={cn(
-          "mt-3 max-w-[480px] text-sm font-normal leading-relaxed tracking-wide md:text-[15px]",
+          "mt-3 max-w-[540px] text-sm font-normal leading-relaxed tracking-wide md:text-[15px]",
           align === "center" && "mx-auto",
           tone === "dark" ? "text-body-dark" : "text-body",
         )}

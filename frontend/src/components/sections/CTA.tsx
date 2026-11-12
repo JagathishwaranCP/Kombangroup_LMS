@@ -11,13 +11,13 @@ const CTA = () => {
   return (
     <section
       aria-labelledby="cta-title"
-      className="relative overflow-hidden bg-gradient-to-b from-bg to-white py-12 md:py-16"
+      className="relative overflow-hidden bg-gradient-to-b from-bg to-white py-10 sm:py-12 md:py-16"
     >
       <Container className="relative">
-        <Reveal className="mx-auto max-w-3xl rounded-2xl border border-border bg-white px-6 py-8 text-center shadow-card sm:px-10 md:py-12">
+        <Reveal className="mx-auto max-w-3xl rounded-2xl border border-border bg-white px-4 py-7 text-center shadow-card sm:px-8 sm:py-10 md:px-10 md:py-12">
           <h2
             id="cta-title"
-            className="text-[26px] font-bold leading-tight text-navy sm:text-[32px] md:text-[36px]"
+            className="text-[clamp(1.35rem,3.5vw,2.25rem)] font-bold leading-tight text-navy"
           >
             {cta.title} <span className="text-indigo">{cta.titleAccent}</span>
           </h2>

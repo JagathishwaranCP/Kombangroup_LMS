@@ -31,10 +31,10 @@ const Testimonials = () => {
     <section
       id="testimonials"
       aria-labelledby="testimonials-title"
-      className="overflow-hidden bg-[#F7F9FC] py-12 md:py-16"
+      className="overflow-hidden bg-[#F7F9FC] py-10 sm:py-12 md:py-16"
     >
-      <Container className="grid items-center gap-10 lg:grid-cols-[1.15fr_0.85fr]">
-        <Reveal className="order-last lg:order-none">
+      <Container className="grid items-center gap-8 sm:gap-10 lg:grid-cols-[1.15fr_0.85fr]">
+        <Reveal className="order-last min-w-0 lg:order-none">
           <SectionHeading
             id="testimonials-title"
             align="left"
@@ -42,7 +42,7 @@ const Testimonials = () => {
             title={testimonials.title}
           />
 
-          <div className="mt-6 rounded-xl border border-border bg-white p-6 shadow-card sm:p-7">
+          <div className="mt-5 rounded-xl border border-border bg-white p-4 shadow-card sm:mt-6 sm:p-6 md:p-7">
             {/* All quotes share one grid cell, so the card keeps the height of the
                 longest one and the avatar buttons never move when switching. */}
             <div className="grid">
@@ -105,9 +105,9 @@ const Testimonials = () => {
           </div>
         </Reveal>
 
-        <Reveal delay={0.1} className="relative mx-auto size-[240px] sm:size-[300px]">
-          <Dot className="-left-4 -top-2 size-20 bg-electric/20" />
-          <Dot className="-bottom-4 -right-4 size-32 bg-indigo/15" />
+        <Reveal delay={0.1} className="relative mx-auto size-[200px] sm:size-[260px] md:size-[300px]">
+          <Dot className="-left-3 -top-2 size-16 bg-electric/20 sm:size-20" />
+          <Dot className="-bottom-3 -right-3 size-24 bg-indigo/15 sm:size-32" />
           <AnimatePresence mode="wait" initial={false}>
             <motion.img
               key={active.name}

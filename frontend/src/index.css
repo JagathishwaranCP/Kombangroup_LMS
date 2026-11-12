@@ -246,14 +246,21 @@ body {
   --font-poppins: "Poppins";
 }
 
-/* Shared content width — navbar, badge, headline, banner and CTA share edges. */
+/* Shared fluid content width for phones → large desktops. */
 .landing .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: min(1200px, 100%);
   margin-left: auto;
   margin-right: auto;
-  padding-left: 1.25rem;
-  padding-right: 1.25rem;
+  padding-left: max(1rem, env(safe-area-inset-left));
+  padding-right: max(1rem, env(safe-area-inset-right));
+}
+
+@media (min-width: 640px) {
+  .landing .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
 
 @media (min-width: 768px) {
@@ -263,15 +270,39 @@ body {
   }
 }
 
+@media (min-width: 1280px) {
+  .landing .container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Prevent accidental horizontal scroll from decorative overflows. */
+.landing {
+  overflow-x: clip;
+}
+
 /* :where() keeps specificity low so Tailwind focus utilities can override this */
 :where(.landing) :focus-visible {
   outline: 2px solid #3B66FE;
   outline-offset: 2px;
 }
 
-/* Keep anchored sections clear of the sticky navbar */
+/* Keep anchored sections clear of the sticky navbar on all devices */
 .landing section[id] {
-  scroll-margin-top: 64px;
+  scroll-margin-top: 4.5rem;
+}
+
+@media (min-width: 640px) {
+  .landing section[id] {
+    scroll-margin-top: 5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .landing section[id] {
+    scroll-margin-top: 5.5rem;
+  }
 }
 
 /* Quiet edge on the mark; a soft lift when it sits large in the hero. */

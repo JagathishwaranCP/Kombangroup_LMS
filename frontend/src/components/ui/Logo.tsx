@@ -3,14 +3,14 @@ import { cn } from "../../utils/cn";
 
 const markSizes = {
   /** Compact sticky bar after scroll. */
-  md: "h-12 w-12 rounded-xl p-1",
-  /** Home hero header — prominent before scroll. */
-  lg: "logo-mark-lg h-[4.75rem] w-[4.75rem] rounded-2xl p-1 sm:h-[5.25rem] sm:w-[5.25rem]",
+  md: "h-9 w-9 rounded-lg p-0.5 sm:h-11 sm:w-11 sm:rounded-xl sm:p-1",
+  /** Home hero header — scales down on phones. */
+  lg: "logo-mark-lg h-12 w-12 rounded-xl p-1 sm:h-16 sm:w-16 sm:rounded-2xl md:h-[4.5rem] md:w-[4.5rem]",
 };
 
 const nameSizes = {
-  md: "text-base sm:text-lg",
-  lg: "text-lg sm:text-xl md:text-2xl",
+  md: "text-sm sm:text-base md:text-lg",
+  lg: "text-base sm:text-lg md:text-xl lg:text-2xl",
 };
 
 interface LogoProps {
@@ -26,7 +26,7 @@ const Logo = ({ size = "md", showName = false, tone = "light" }: LogoProps) => (
   <a
     href="#home"
     aria-label={brand.homeLabel}
-    className="inline-flex items-center gap-2.5 sm:gap-3"
+    className="inline-flex min-w-0 items-center gap-2 sm:gap-2.5 md:gap-3"
   >
     <span
       className={cn(
@@ -45,7 +45,7 @@ const Logo = ({ size = "md", showName = false, tone = "light" }: LogoProps) => (
     {showName && (
       <span
         className={cn(
-          "font-bold tracking-tight transition-[font-size] duration-300 ease-out",
+          "truncate font-bold tracking-tight transition-[font-size] duration-300 ease-out",
           nameSizes[size],
         )}
       >

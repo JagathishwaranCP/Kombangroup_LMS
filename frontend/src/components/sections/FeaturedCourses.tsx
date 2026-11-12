@@ -54,16 +54,16 @@ const FeaturedCourses = () => {
   };
 
   return (
-    <section id="courses" aria-labelledby="courses-title" className="overflow-hidden pb-12 md:pb-16">
+    <section id="courses" aria-labelledby="courses-title" className="overflow-hidden pb-10 sm:pb-12 md:pb-16">
       <Container>
-        <Reveal className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+        <Reveal className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
           <SectionHeading
             id="courses-title"
             align="left"
             tag={featuredCourses.tag}
             title={featuredCourses.title}
           />
-          <Button to={featuredCourses.cta.to} withArrow className="shrink-0 self-start md:mb-1 md:self-auto">
+          <Button to={featuredCourses.cta.to} withArrow className="w-full shrink-0 self-stretch sm:mb-1 sm:w-auto sm:self-auto">
             {featuredCourses.cta.label}
           </Button>
         </Reveal>
@@ -107,7 +107,7 @@ const FeaturedCourses = () => {
             {loopItems.map((course, index) => (
               <li
                 key={`${course.title}-${index}`}
-                className="w-[min(86vw,320px)] shrink-0 md:w-[320px] xl:w-[340px]"
+                className="w-[min(78vw,300px)] shrink-0 sm:w-[300px] md:w-[320px] xl:w-[340px]"
               >
                 <CourseCard
                   course={course}

@@ -10,7 +10,7 @@ const Achievements = () => (
   <section
     id="achievements"
     aria-labelledby="achievements-title"
-    className="relative overflow-hidden py-12 md:py-16"
+    className="relative overflow-hidden py-10 sm:py-12 md:py-16"
   >
     <DotGrid cols={3} rows={4} className="right-[7%] top-20 hidden text-indigo/30 md:block" />
     <OutlineTriangle className="bottom-14 left-[6%] hidden size-16 rotate-[15deg] text-electric/30 lg:block" />
