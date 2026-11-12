@@ -32,12 +32,12 @@ const Sticker = ({ src, className, tilt, delay }: StickerProps) => (
 
 const Hero = () => {
   return (
-    <section id="home" aria-labelledby="hero-title">
-      <Container className="relative pt-6">
+    <section id="home" aria-labelledby="hero-title" className="overflow-hidden bg-primary">
+      <Container className="relative">
         <CrossShape className="-left-2 top-1 hidden size-11 text-electric/30 lg:block" />
 
-        <div className="relative flex min-h-[620px] flex-col overflow-hidden rounded-3xl bg-primary pt-20">
-          <div className="grid flex-1 grid-cols-1 items-center gap-10 px-6 pb-12 pt-6 md:grid-cols-2 md:gap-6 lg:gap-8 lg:px-12">
+        <div className="relative flex min-h-[620px] flex-col pt-20">
+          <div className="grid flex-1 grid-cols-1 items-center gap-10 pb-12 pt-6 md:grid-cols-2 md:gap-6 lg:gap-8">
             <div className="text-center md:text-left">
               <SectionTag tone="dark">{hero.tag}</SectionTag>
               <h1

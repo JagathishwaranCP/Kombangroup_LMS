@@ -34,7 +34,7 @@ const Navbar = () => {
         <div
           className={cn(
             "flex items-center justify-between gap-3",
-            scrolled ? "h-20" : "h-[5.25rem] px-6 sm:h-24 lg:px-12",
+            scrolled ? "h-20" : "h-[5.25rem] sm:h-24",
           )}
         >
           <Logo size={scrolled ? "md" : "lg"} />

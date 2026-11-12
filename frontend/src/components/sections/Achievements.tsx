@@ -25,7 +25,7 @@ const Achievements = () => (
         />
       </Reveal>
 
-      <ul className="mx-auto mt-12 grid max-w-[1100px] gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <ul className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {achievements.stats.map((stat, index) => (
           <li key={stat.label}>
             <Reveal delay={index * 0.1} className="h-full">

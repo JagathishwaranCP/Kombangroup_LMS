@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { testimonials } from "../../data/content";
 import { cn } from "../../utils/cn";
@@ -14,9 +14,18 @@ const fade = {
   transition: { duration: 0.25 },
 };
 
+const ROTATE_MS = 4500;
+
 const Testimonials = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const active = testimonials.items[activeIndex];
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setActiveIndex((current) => (current + 1) % testimonials.items.length);
+    }, ROTATE_MS);
+    return () => window.clearInterval(id);
+  }, []);
 
   return (
     <section
@@ -33,7 +42,7 @@ const Testimonials = () => {
             title={testimonials.title}
           />
 
-          <div className="mt-8 max-w-[560px] rounded-xl bg-primary-card p-8 shadow-card-dark">
+          <div className="mt-8 rounded-xl bg-primary-card p-8 shadow-card-dark">
             {/* All quotes share one grid cell, so the card keeps the height of the
                 longest one and the avatar buttons never move when switching. */}
             <div className="grid">
@@ -49,7 +58,7 @@ const Testimonials = () => {
                     )}
                   >
                     <p className="text-[13px] tracking-wide text-body-dark">{item.origin}</p>
-                    <blockquote className="mt-3 max-w-[480px] text-sm font-light leading-relaxed tracking-wide text-white md:text-[15px]">
+                    <blockquote className="mt-3 text-sm font-light leading-relaxed tracking-wide text-white md:text-[15px]">
                       “{item.quote}”
                     </blockquote>
                     <figcaption className="mt-5">

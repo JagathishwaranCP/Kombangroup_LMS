@@ -10,33 +10,35 @@ const CTA = () => {
   const handleSubscribe = () => {};
 
   return (
-    <section aria-labelledby="cta-title" className="py-20 md:py-28">
-      <Container>
-        <Reveal className="relative overflow-hidden rounded-3xl bg-primary px-6 py-14 text-center md:p-14">
-          <Dot className="-left-28 -top-28 size-80 bg-electric/30 blur-3xl" />
-          <Dot className="-left-16 -top-16 size-48 bg-white/5" />
-          <Dot className="-right-14 -top-14 size-44 bg-white/5" />
-          <Dot className="-bottom-20 left-[12%] size-44 bg-white/5" />
-          <Dot className="-bottom-12 -right-10 size-28 bg-indigo" />
+    <section
+      aria-labelledby="cta-title"
+      className="relative flex min-h-screen items-center overflow-hidden bg-primary py-24"
+    >
+      <Dot className="-left-32 top-0 size-[36rem] bg-electric/25 blur-3xl" />
+      <Dot className="-left-8 top-16 size-64 bg-white/5" />
+      <Dot className="bottom-12 left-[7%] size-44 bg-white/[0.07]" />
+      <Dot className="-right-24 -top-20 size-[28rem] bg-indigo/50 blur-3xl" />
+      <Dot className="right-[8%] top-20 size-40 bg-white/5" />
+      <Dot className="-bottom-20 right-[16%] size-56 bg-electric/20 blur-2xl" />
 
-          <div className="relative">
-            <h2 id="cta-title" className="text-[28px] font-bold leading-tight text-white md:text-4xl">
-              {cta.title} <span className="text-electric-light">{cta.titleAccent}</span>
-            </h2>
-            <p className="mx-auto mt-4 max-w-[460px] text-sm font-light leading-relaxed tracking-wide text-white/70 md:text-[15px]">
-              {cta.description}
-            </p>
-            <InlineForm
-              type="email"
-              name="email"
-              required
-              label={cta.form.label}
-              placeholder={cta.form.placeholder}
-              buttonLabel={cta.form.button}
-              onSubmit={handleSubscribe}
-              className="mx-auto mt-8 max-w-[380px]"
-            />
-          </div>
+      <Container className="relative">
+        <Reveal className="mx-auto max-w-3xl text-center">
+          <h2 id="cta-title" className="text-[32px] font-bold leading-tight text-white sm:text-[40px] md:text-[52px]">
+            {cta.title} <span className="text-electric-light">{cta.titleAccent}</span>
+          </h2>
+          <p className="mx-auto mt-5 max-w-[540px] text-sm font-light leading-relaxed tracking-wide text-white/75 md:text-[15px]">
+            {cta.description}
+          </p>
+          <InlineForm
+            type="email"
+            name="email"
+            required
+            label={cta.form.label}
+            placeholder={cta.form.placeholder}
+            buttonLabel={cta.form.button}
+            onSubmit={handleSubscribe}
+            className="mx-auto mt-10 max-w-[480px]"
+          />
         </Reveal>
       </Container>
     </section>

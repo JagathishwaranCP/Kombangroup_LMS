@@ -8,22 +8,23 @@ const sizes = {
   lg: "h-[4.5rem] w-[4.5rem] rounded-3xl p-1.5 sm:h-20 sm:w-20",
 };
 
-/** Cloud ConneKt mark. The artwork is navy on transparent, so it sits on a white rounded tile. */
+/** Cloud ConneKt mark on a white rounded tile, with a blue glow so it reads on the dark bar. */
 const Logo = ({ size = "md" }: { size?: keyof typeof sizes }) => (
   <a
     href="#home"
     aria-label={brand.homeLabel}
     className={cn(
-      "inline-flex shrink-0 items-center justify-center overflow-hidden bg-white",
+      "logo-mark relative inline-flex shrink-0 items-center justify-center overflow-hidden bg-white",
+      size === "lg" && "logo-mark-lg",
       sizes[size],
     )}
   >
     <img
-      src="/cloudconnekt-logo.png"
+      src="/cloudconnekt-logo-mark.jpg"
       alt=""
-      width={300}
-      height={295}
-      className="h-full w-full object-contain"
+      width={1024}
+      height={938}
+      className="h-full w-full scale-[1.14] object-contain"
     />
   </a>
 );
