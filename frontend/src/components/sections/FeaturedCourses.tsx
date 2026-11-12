@@ -81,7 +81,7 @@ const FeaturedCourses = () => {
 
         <div
           ref={scrollerRef}
-          className="courses-scroller overflow-x-auto px-5 md:px-8 lg:px-12 xl:px-16"
+          className="courses-scroller overflow-x-auto px-[max(1rem,env(safe-area-inset-left))] sm:px-[clamp(1.25rem,3vw,2rem)] lg:px-[clamp(1.5rem,3.5vw,3rem)]"
           onMouseEnter={pause}
           onMouseLeave={scheduleResume}
           onTouchStart={pause}

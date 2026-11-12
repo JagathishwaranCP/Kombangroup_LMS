@@ -60,13 +60,13 @@ const Navbar = () => {
 
         <nav
           aria-label="Section navigation"
-          className="hidden items-center gap-0.5 xl:flex"
+          className="hidden min-w-0 flex-1 items-center justify-center gap-0.5 lg:flex xl:gap-1"
         >
           {nav.links.map((link) => (
             <a
               key={link.href}
               href={link.href}
-              className="rounded-[10px] px-2.5 py-2 text-[13px] font-medium text-body transition-colors duration-200 hover:bg-panel hover:text-navy 2xl:px-3 2xl:text-sm"
+              className="rounded-[10px] px-2 py-2 text-[12px] font-medium text-body transition-colors duration-200 hover:bg-panel hover:text-navy xl:px-2.5 xl:text-[13px] 2xl:px-3 2xl:text-sm"
             >
               {link.label}
             </a>
@@ -84,7 +84,7 @@ const Navbar = () => {
           </Button>
           <button
             type="button"
-            className="inline-flex size-9 items-center justify-center rounded-[10px] border border-border bg-white text-navy sm:size-10 xl:hidden"
+            className="inline-flex size-9 items-center justify-center rounded-[10px] border border-border bg-white text-navy sm:size-10 lg:hidden"
             aria-expanded={menuOpen}
             aria-controls={menuId}
             aria-label={menuOpen ? nav.closeLabel : nav.menuLabel}
@@ -98,7 +98,7 @@ const Navbar = () => {
       <div
         id={menuId}
         hidden={!menuOpen}
-        className="max-h-[min(70vh,480px)] overflow-y-auto border-t border-border bg-white xl:hidden"
+        className="max-h-[min(70vh,480px)] overflow-y-auto border-t border-border bg-white lg:hidden"
       >
         <Container className="py-3">
           <nav aria-label="Mobile section navigation" className="flex flex-col gap-1">

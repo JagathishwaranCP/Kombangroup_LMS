@@ -28,7 +28,7 @@ const SectionHeading = ({
     <h2
       id={id}
       className={cn(
-        "mt-3 text-[clamp(1.35rem,3.4vw,2.125rem)] font-bold leading-tight",
+        "mt-3 text-[clamp(1.35rem,2.4vw+0.7rem,2.35rem)] font-bold leading-tight",
         tone === "dark" ? "text-white" : "text-navy",
       )}
     >

@@ -10,17 +10,17 @@ const Hero = () => {
       className="overflow-hidden bg-gradient-to-b from-white via-[#F4F7FC] to-bg"
     >
       <Container>
-        <div className="grid grid-cols-1 items-center gap-6 pb-8 pt-[5.5rem] sm:gap-8 sm:pb-10 sm:pt-24 md:gap-10 md:pb-12 md:pt-28 lg:grid-cols-2 lg:gap-10 lg:pb-14 lg:pt-28">
-          <div className="flex w-full max-w-xl flex-col items-stretch text-left sm:items-start">
+        <div className="grid grid-cols-1 items-center gap-6 pb-8 pt-[5.5rem] sm:gap-8 sm:pb-10 sm:pt-24 md:gap-10 md:pb-12 md:pt-28 lg:grid-cols-2 lg:gap-12 lg:pb-14 lg:pt-28 xl:gap-16">
+          <div className="flex w-full min-w-0 flex-col items-stretch text-left sm:items-start">
             <h1
               id="hero-title"
-              className="text-[clamp(1.5rem,4.6vw,2.5rem)] font-bold leading-[1.25] tracking-tight text-navy"
+              className="text-[clamp(1.5rem,3.2vw+0.6rem,3rem)] font-bold leading-[1.22] tracking-tight text-navy"
             >
               <span className="block">{hero.title.line1}</span>
               <span className="block">{hero.title.line2}</span>
               <span className="block text-indigo">{hero.title.line2Accent}</span>
             </h1>
-            <p className="mt-3 max-w-lg text-[0.9375rem] font-normal leading-relaxed text-body sm:mt-4 md:text-base">
+            <p className="mt-3 max-w-2xl text-[0.9375rem] font-normal leading-relaxed text-body sm:mt-4 md:text-base lg:text-[1.05rem]">
               {hero.description}
             </p>
             <div className="mt-5 flex w-full flex-col gap-3 sm:mt-6 sm:w-auto sm:flex-row sm:flex-wrap">
@@ -38,14 +38,14 @@ const Hero = () => {
             </div>
           </div>
 
-          <div className="relative mx-auto w-full max-w-xl lg:max-w-none">
+          <div className="relative w-full min-w-0">
             <div
               aria-hidden="true"
               className="absolute -inset-3 rounded-[28px] bg-gradient-to-br from-electric/20 via-indigo/15 to-transparent blur-2xl sm:-inset-4 sm:rounded-[32px]"
             />
 
             <figure className="relative overflow-hidden rounded-2xl border border-border/80 bg-white shadow-card-hover sm:rounded-[24px]">
-              <div className="relative aspect-[16/11] overflow-hidden sm:aspect-[16/10]">
+              <div className="relative aspect-[16/11] overflow-hidden sm:aspect-[16/10] lg:aspect-[16/9.5]">
                 <img
                   src={hero.image.src}
                   alt={hero.image.alt}
