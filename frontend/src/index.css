@@ -232,6 +232,46 @@ body {
   }
 }
 
+/* E-learning landing page (src/HomePage.tsx) */
+:root {
+  /* Tailwind's `font-sans` resolves through --font-poppins (tailwind.config.js).
+     Outside the landing page it stays on the system stack the dashboards and
+     login screens already render with. */
+  --font-poppins: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-inter: "Inter";
+}
+
+.landing {
+  --font-poppins: "Poppins";
+}
+
+/* :where() keeps specificity low so Tailwind focus utilities can override this */
+:where(.landing) :focus-visible {
+  outline: 2px solid #3B66FE;
+  outline-offset: 2px;
+}
+
+/* Keep anchored sections clear of the sticky navbar */
+.landing section[id] {
+  scroll-margin-top: 88px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.landing) {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing *,
+  .landing *::before,
+  .landing *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-track { background: #E2E8F0; }
 ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }

@@ -5,7 +5,7 @@ import { FileText,  PlusCircle, BookOpen, Trash2, CheckCircle,  X, AlertTriangle
 import API_BASE_URL from './config';
 import AdminLogin from "./AdminLogin";
 import Login from "./Login";
-import LandingPage from "./LandingPage"; 
+import HomePage from "./HomePage";
 import DashboardLayout from "./DashboardLayout";
 import CreateCourse from "./CreateCourse";
 import CourseBuilder from "./CourseBuilder";
@@ -148,7 +148,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<LandingPage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<PublicOnlyRoute><Login /></PublicOnlyRoute>} />
         <Route path="/admin-login" element={<PublicOnlyRoute><AdminLogin /></PublicOnlyRoute>} />
 
