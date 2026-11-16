@@ -8,6 +8,7 @@ import {
   Smartphone, AlertCircle, X, Eye, EyeOff
 } from "lucide-react";
 import BrandLogo from "./components/BrandLogo";
+import { cloudConnektAccounts } from "./data/loginAccounts";
 import { saveSession } from "./utils/session";
 
 // Google Icon Component
@@ -30,13 +31,25 @@ const Login = () => {
   const [toast, setToast] = useState<ToastState>({ show: false, message: "", type: "success" });
   const [phone, setPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({ email: "", password: "", name: "" });
+  const [formData, setFormData] = useState({
+    email: cloudConnektAccounts.user.email,
+    password: cloudConnektAccounts.user.password,
+    name: "",
+  });
 
   const activeBg = isSignUp ? "bg-[#5755D9]" : "bg-[#091941]";
   const activeText = isSignUp ? "text-[#5755D9]" : "text-[#091941]";
   const API_URL = API_BASE_URL;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
+  const fillCloudConnektUser = () => {
+    setIsSignUp(false);
+    setFormData((prev) => ({
+      ...prev,
+      email: cloudConnektAccounts.user.email,
+      password: cloudConnektAccounts.user.password,
+    }));
+  };
   const triggerToast = (message: string, type: "success" | "error" = "success") => { setToast({ show: true, message, type }); setTimeout(() => setToast((prev) => ({ ...prev, show: false })), 3000); };
 
   const finalizeSignup = async () => {
@@ -50,7 +63,11 @@ const Login = () => {
     triggerToast("Account created successfully! Please Sign In.", "success");
     setIsSignUp(false);
     setPhone("");
-    setFormData({ email: "", password: "", name: "" });
+    setFormData({
+      email: cloudConnektAccounts.user.email,
+      password: cloudConnektAccounts.user.password,
+      name: "",
+    });
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -105,8 +122,18 @@ const Login = () => {
         `}>
           <form onSubmit={handleAuth} className="bg-[#F8FAFC] flex flex-col items-center justify-center w-full h-full px-8 py-10 lg:px-12 text-center">
             <div className="mb-4"><BrandLogo size="xl" showTagline /></div>
-            <h1 className="text-2xl font-bold text-slate-800 mb-1">Learner Login</h1>
-            <p className="text-slate-400 text-sm mb-6">Sign in using email and password</p>
+            <h1 className="text-2xl font-bold text-slate-800 mb-1">CloudConnekt Login</h1>
+            <p className="text-slate-400 text-sm mb-5">Sign in with your CloudConnekt learner account</p>
+
+            <button
+              type="button"
+              onClick={fillCloudConnektUser}
+              className="mb-5 w-full max-w-[350px] rounded-xl border border-[#5755D9]/25 bg-[#5755D9]/5 px-4 py-3 text-left transition-colors hover:bg-[#5755D9]/10"
+            >
+              <p className="text-xs font-bold uppercase tracking-wide text-[#5755D9]">CloudConnekt User Login</p>
+              <p className="mt-1 text-sm font-semibold text-slate-700">{cloudConnektAccounts.user.email}</p>
+              <p className="text-xs text-slate-500">Click to fill credentials, then Sign In</p>
+            </button>
 
             <div className="flex gap-4 mb-6 w-full justify-center">
               <button type="button" className="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-sm"><GoogleIcon /></button>
@@ -119,11 +146,11 @@ const Login = () => {
             <div className="w-full max-w-[350px] space-y-4">
               <div className="flex items-center bg-white rounded-lg px-4 py-3 border border-slate-200 focus-within:ring-2 focus-within:ring-[#091941] focus-within:ring-opacity-50 transition-all shadow-sm">
                 <Mail className="text-slate-400 mr-3 shrink-0" size={20} strokeWidth={1.5} />
-                <input type="email" name="email" placeholder="Email Address" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
+                <input type="email" name="email" value={formData.email} placeholder="Email Address" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
               </div>
               <div className="flex items-center bg-white rounded-lg px-4 py-3 border border-slate-200 focus-within:ring-2 focus-within:ring-[#091941] focus-within:ring-opacity-50 transition-all shadow-sm">
                 <Lock className="text-slate-400 mr-3 shrink-0" size={20} strokeWidth={1.5} />
-                <input type={showPassword ? "text" : "password"} name="password" placeholder="Password" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
+                <input type={showPassword ? "text" : "password"} name="password" value={formData.password} placeholder="Password" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-slate-400 hover:text-[#091941] focus:outline-none transition-colors ml-2 shrink-0" aria-label={showPassword ? "Hide password" : "Show password"}>
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
@@ -148,15 +175,15 @@ const Login = () => {
             <div className="w-full max-w-[350px] space-y-4">
               <div className="flex items-center bg-white rounded-lg px-4 py-3 border border-slate-200 focus-within:ring-2 focus-within:ring-[#5755D9] shadow-sm">
                 <User className="text-slate-400 mr-3 shrink-0" size={20} strokeWidth={1.5} />
-                <input type="text" name="name" placeholder="Full Name" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
+                <input type="text" name="name" value={formData.name} placeholder="Full Name" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
               </div>
               <div className="flex items-center bg-white rounded-lg px-4 py-3 border border-slate-200 focus-within:ring-2 focus-within:ring-[#5755D9] shadow-sm">
                 <Mail className="text-slate-400 mr-3 shrink-0" size={20} strokeWidth={1.5} />
-                <input type="email" name="email" placeholder="Email Address" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
+                <input type="email" name="email" value={formData.email} placeholder="Email Address" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
               </div>
               <div className="flex items-center bg-white rounded-lg px-4 py-3 border border-slate-200 focus-within:ring-2 focus-within:ring-[#5755D9] shadow-sm">
                 <Lock className="text-slate-400 mr-3 shrink-0" size={20} strokeWidth={1.5} />
-                <input type={showPassword ? "text" : "password"} name="password" placeholder="Create Password" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
+                <input type={showPassword ? "text" : "password"} name="password" value={formData.password} placeholder="Create Password" required className="bg-transparent outline-none flex-1 text-sm font-medium text-slate-700 placeholder-slate-400" onChange={handleInputChange} />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="text-slate-400 hover:text-[#5755D9] focus:outline-none transition-colors ml-2 shrink-0" aria-label={showPassword ? "Hide password" : "Show password"}>
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
