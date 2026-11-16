@@ -236,10 +236,14 @@ const StudentDashboard = () => {
 
     const fetchData = async () => {
         setLoading(true);
-        try {
-            const token = localStorage.getItem("token");
-            if (!token) { navigate("/"); return; }
+        const token = localStorage.getItem("token");
+        if (!token) {
+            setLoading(false);
+            navigate("/");
+            return;
+        }
 
+        try {
             const config = { headers: { Authorization: `Bearer ${token}` } };
 
             const [allRes, myRes] = await Promise.all([
