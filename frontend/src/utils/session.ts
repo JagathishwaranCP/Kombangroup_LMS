@@ -1,3 +1,5 @@
+import { DEMO_TOKEN_PREFIX } from "../data/loginAccounts";
+
 const TOKEN_KEY = "token";
 const ROLE_KEY = "role";
 const LOGIN_AT_KEY = "login_at";
@@ -20,6 +22,10 @@ export const clearSession = () => {
   localStorage.removeItem(ROLE_KEY);
   localStorage.removeItem(LOGIN_AT_KEY);
 };
+
+/** Frontend-only review session (no production DB / real JWT). */
+export const isDemoToken = (token?: string | null) =>
+  Boolean(token && token.startsWith(DEMO_TOKEN_PREFIX));
 
 export const getValidSession = (): SessionData | null => {
   const token = localStorage.getItem(TOKEN_KEY);

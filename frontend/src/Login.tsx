@@ -8,7 +8,7 @@ import {
   Smartphone, AlertCircle, X, Eye, EyeOff
 } from "lucide-react";
 import BrandLogo from "./components/BrandLogo";
-import { cloudConnektAccounts } from "./data/loginAccounts";
+import { cloudConnektAccounts, tryDemoLogin } from "./data/loginAccounts";
 import { saveSession } from "./utils/session";
 
 // Google Icon Component
@@ -76,6 +76,15 @@ const Login = () => {
 
     try {
       if (!isSignUp) {
+        // Review credentials work in the frontend only (no production DB required).
+        const demo = tryDemoLogin(formData.email, formData.password, "student");
+        if (demo) {
+          saveSession(demo.access_token, demo.role);
+          triggerToast("CloudConnekt user login successful! Redirecting...", "success");
+          setTimeout(() => navigate("/student-dashboard"), 800);
+          return;
+        }
+
         const loginParams = new URLSearchParams();
         loginParams.append("username", formData.email.trim());
         loginParams.append("password", formData.password);
@@ -101,7 +110,7 @@ const Login = () => {
     } catch (err: any) {
       if (!err?.response) {
         triggerToast(
-          "Cannot reach CloudConnekt API from this device. Use the site URL (not only this PC), and ensure VITE_API_URL points to the live backend in production.",
+          "Cannot reach CloudConnekt API from this device. Use the CloudConnekt User Login card for review access without a database.",
           "error",
         );
       } else {
@@ -139,7 +148,7 @@ const Login = () => {
             >
               <p className="text-xs font-bold uppercase tracking-wide text-[#5755D9]">CloudConnekt User Login</p>
               <p className="mt-1 text-sm font-semibold text-slate-700">{cloudConnektAccounts.user.email}</p>
-              <p className="text-xs text-slate-500">Click to fill credentials, then Sign In</p>
+              <p className="text-xs text-slate-500">Review login — works without a database</p>
             </button>
 
             <div className="flex gap-4 mb-6 w-full justify-center">

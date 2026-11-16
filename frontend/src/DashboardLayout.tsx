@@ -15,7 +15,7 @@ const DashboardLayout = () => {
 
   // ✅ Profile Dropdown State
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const instructorData = { name: "Instructor", email: "instructor@cloudconnekt.com" };
+  const instructorData = { name: "CloudConnekt Admin", email: "admin@cloudconnekt.com" };
 
   const menuItems = [
     { label: "Home", path: "/dashboard", icon: <LayoutDashboard size={20} /> },

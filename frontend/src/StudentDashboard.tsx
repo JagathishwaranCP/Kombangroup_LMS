@@ -11,7 +11,7 @@ import {
 import { motion } from "framer-motion";
 
 import BrandLogo from "./components/BrandLogo";
-import { clearSession, getValidSession } from "./utils/session";
+import { clearSession, getValidSession, isDemoToken } from "./utils/session";
 
 // --- TYPES ---
 interface Course {
@@ -201,6 +201,14 @@ const StudentDashboard = () => {
     const fetchProfile = async () => {
         try {
             const token = localStorage.getItem("token");
+            if (isDemoToken(token)) {
+                setStudentProfile({
+                    name: "CloudConnekt User",
+                    email: "user@cloudconnekt.com",
+                    phone: "",
+                });
+                return;
+            }
             const res = await axios.get(`${API_BASE_URL}/users/me`, { headers: { Authorization: `Bearer ${token}` } });
             setStudentProfile({
                 name: res.data.full_name || "Student",
@@ -247,7 +255,11 @@ const StudentDashboard = () => {
             setAvailableCourses(allData.filter((c: any) => !myCourseIds.has(c.id)));
             setEnrolledCourses(myData);
         } catch (err: any) {
-            if (err.response?.status === 401) { clearSession(); navigate("/login"); }
+            // Keep frontend review sessions open even when API/DB is unavailable.
+            if (err.response?.status === 401 && !isDemoToken(token)) {
+                clearSession();
+                navigate("/login");
+            }
         } finally {
             setLoading(false);
         }
