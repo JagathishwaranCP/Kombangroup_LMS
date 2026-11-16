@@ -99,10 +99,17 @@ const Login = () => {
         await finalizeSignup();
       }
     } catch (err: any) {
-      triggerToast(
-        err.response?.data?.detail || (isSignUp ? "Registration Failed. Email may exist." : "Authentication failed. Check credentials."),
-        "error"
-      );
+      if (!err?.response) {
+        triggerToast(
+          "Cannot reach CloudConnekt API from this device. Use the site URL (not only this PC), and ensure VITE_API_URL points to the live backend in production.",
+          "error",
+        );
+      } else {
+        triggerToast(
+          err.response?.data?.detail || (isSignUp ? "Registration Failed. Email may exist." : "Authentication failed. Check credentials."),
+          "error",
+        );
+      }
     } finally {
       setLoading(false);
     }

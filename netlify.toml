@@ -1,7 +1,9 @@
 # Netlify: connect this repo and use these defaults (no secrets here).
-# In Netlify → Site settings → Environment variables, set at least:
+# REQUIRED for login on phones / other devices in production:
+#   Site settings → Environment variables →
 #   VITE_API_URL = https://<your-render-service>.onrender.com/api/v1
-# Add other VITE_* keys from frontend/.env.example as needed.
+# Do NOT set VITE_API_URL to localhost or 127.0.0.1 for production builds.
+# After changing it, trigger a new Netlify deploy.
 
 [build]
   base = "frontend"

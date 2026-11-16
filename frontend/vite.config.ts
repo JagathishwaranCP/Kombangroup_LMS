@@ -1,13 +1,31 @@
 import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc' // 👈 Restored your original SWC plugin
+import react from '@vitejs/plugin-react-swc'
 
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 5173, // ✅ Keeps the port fixed
+    host: true, // phones/other devices can open via your LAN IP
+    port: 5173,
     hmr: {
-      overlay: false, // ✅ Fixes the WebSocket disconnect error
+      overlay: false,
+    },
+    // Same-origin /api during local + LAN testing so mobiles never hit 127.0.0.1
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+    },
+  },
+  preview: {
+    host: true,
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
     },
   },
 })

@@ -65,7 +65,10 @@ const AdminLogin = () => {
     } catch (err: any) {
       const detail = err?.response?.data?.detail;
       if (!err?.response) {
-        triggerToast("Backend unreachable. Ensure API is running.", "error");
+        triggerToast(
+          "Cannot reach CloudConnekt API from this device. On production set VITE_API_URL to your live backend URL (not localhost).",
+          "error",
+        );
       } else {
         triggerToast(detail || "Authentication failed. Check credentials.", "error");
       }
