@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import API_BASE_URL from './config';
+import { asArray } from "./utils/array";
 import {
   UserPlus, Upload, FileSpreadsheet, CheckCircle,
   Download, AlertCircle, X, Shield
@@ -48,8 +49,11 @@ const AddAdmits = () => {
         const res = await axios.get(`${API_BASE_URL}/courses`, {
           headers: { Authorization: `Bearer ${token}` }
         });
-        setCourses(res.data);
-      } catch (err) { console.error("Error fetching courses", err); }
+        setCourses(asArray(res.data));
+      } catch (err) {
+        setCourses([]);
+        console.error("Error fetching courses", err);
+      }
     };
     fetchCourses();
   }, []);

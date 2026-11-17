@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import API_BASE_URL from './config';
+import { asArray } from "./utils/array";
 import { Trash2, User, Search, AlertCircle, X, Calendar, CheckCircle, AlertTriangle, RefreshCw, Key } from "lucide-react"; // ✅ Added Icons
 
 interface Student {
@@ -55,7 +56,7 @@ const StudentManagement = () => {
       const res = await axios.get(`${API_BASE_URL}/admin/students`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setStudents(res.data);
+      setStudents(asArray(res.data));
     } catch (err) {
       console.error("Failed to load students", err);
       // Mock data for demonstration if backend is empty
@@ -186,7 +187,7 @@ const StudentManagement = () => {
 
                     <td style={{ padding: "20px" }}>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                        {student.enrolled_courses.length > 0 ? student.enrolled_courses.map((c, i) => (
+                        {asArray(student.enrolled_courses).length > 0 ? asArray(student.enrolled_courses).map((c, i) => (
                           <span key={i} style={{ fontSize: "11px", background: "#f1f5f9", padding: "4px 8px", borderRadius: "4px", color: brand.textMain, border: `1px solid ${brand.border}` }}>
                             {c}
                           </span>

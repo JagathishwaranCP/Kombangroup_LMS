@@ -77,14 +77,15 @@ const CoursePreview = () => {
       setCourse(res.data);
 
       // Initialize modules state for DnD, sorting items by order
-      const sortedModules = res.data.modules.map((m: any) => ({
+      const modulesData = Array.isArray(res.data?.modules) ? res.data.modules : [];
+      const sortedModules = modulesData.map((m: any) => ({
         ...m,
-        lessons: m.lessons.sort((a: any, b: any) => a.order - b.order)
+        lessons: Array.isArray(m.lessons) ? [...m.lessons].sort((a: any, b: any) => a.order - b.order) : []
       }));
       setModules(sortedModules);
 
       // Auto-expand all modules initially
-      setExpandedModules(res.data.modules.map((m: any) => m.id));
+      setExpandedModules(modulesData.map((m: any) => m.id));
     } catch (err) { console.error("Error loading preview", err); } finally { setLoading(false); }
   };
 
@@ -401,7 +402,7 @@ const CoursePreview = () => {
                               {module.lessons.length === 0 ? (
                                 <div style={{ padding: "20px", textAlign: "center", color: brand.textLight, fontSize: "14px", fontStyle: "italic" }}>No content yet. Drag items here later.</div>
                               ) : (
-                                module.lessons.map((lesson, index) => (
+                                (Array.isArray(module.lessons) ? module.lessons : []).map((lesson, index) => (
                                   <Draggable key={lesson.id} draggableId={`lesson-${lesson.id}`} index={index}>
                                     {(provided, snapshot) => (
                                       <div

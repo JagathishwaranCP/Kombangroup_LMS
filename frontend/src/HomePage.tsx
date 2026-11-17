@@ -12,12 +12,31 @@ import LiveClasses from "./components/sections/LiveClasses";
 import Navbar from "./components/sections/Navbar";
 import Testimonials from "./components/sections/Testimonials";
 import WorkingProcess from "./components/sections/WorkingProcess";
-import { skipLink } from "./data/content";
+import { hero, skipLink } from "./data/content";
 import { getValidSession } from "./utils/session";
 
 /** Public landing page, served at "/". Copy lives in ./data/content.ts. */
 const HomePage = () => {
   const navigate = useNavigate();
+
+  // Preload hero image only on the landing route (avoids unused-preload warnings on app pages).
+  useEffect(() => {
+    const href = hero.image.src;
+    const existing = document.head.querySelector(`link[data-hero-preload="true"]`);
+    if (existing) return;
+
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = href;
+    link.setAttribute("fetchpriority", "high");
+    link.setAttribute("data-hero-preload", "true");
+    document.head.appendChild(link);
+
+    return () => {
+      link.remove();
+    };
+  }, []);
 
   // Signed-in users go straight to their dashboard.
   useEffect(() => {

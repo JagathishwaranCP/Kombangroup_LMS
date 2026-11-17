@@ -18,6 +18,7 @@ import Dashboard from "./Dashboard";
 import InstructorSettings from "./InstructorSettings"; 
 import StudentManagement from "./StudentManagement";
 import Messages from "./Messages";
+import { asArray } from "./utils/array";
 import { clearSession, getValidSession, isDemoToken } from "./utils/session";
 // --- Modified CourseList Component ---
 const CourseList = () => {
@@ -41,8 +42,9 @@ const CourseList = () => {
       if (!session?.token) { setLoading(false); return; }
       try {
         const res = await axios.get(`${API_BASE_URL}/courses`, { headers: { Authorization: `Bearer ${session.token}` } });
-        setCourses(res.data);
+        setCourses(asArray(res.data));
       } catch (err: any) {
+        setCourses([]);
         // Keep frontend review sessions open even when API/DB is unavailable.
         if (err.response?.status === 401 && !isDemoToken(session.token)) {
           clearSession();

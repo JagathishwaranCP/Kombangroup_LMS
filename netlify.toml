@@ -1,7 +1,7 @@
 # Netlify: connect this repo and use these defaults (no secrets here).
-# REQUIRED for login on phones / other devices in production:
+# REQUIRED for production API access (set in Netlify UI, then redeploy):
 #   Site settings → Environment variables →
-#   VITE_API_URL = https://<your-render-service>.onrender.com/api/v1
+#   VITE_API_URL = https://komban-lms-backend.onrender.com/api/v1
 # Do NOT set VITE_API_URL to localhost or 127.0.0.1 for production builds.
 # After changing it, trigger a new Netlify deploy.
 

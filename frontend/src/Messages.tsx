@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import API_BASE_URL from './config';
+import { asArray } from "./utils/array";
 import { Send, Users, BookOpen, User } from "lucide-react";
 
 // define basic types to satisfy TypeScript
@@ -25,8 +26,12 @@ const Messages = () => {
 
     useEffect(() => {
         const token = localStorage.getItem("token");
-        axios.get(`${API_BASE_URL}/courses`, { headers: { Authorization: `Bearer ${token}` } }).then(res => setCourses(res.data));
-        axios.get(`${API_BASE_URL}/admin/students`, { headers: { Authorization: `Bearer ${token}` } }).then(res => setStudents(res.data));
+        axios.get(`${API_BASE_URL}/courses`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(res => setCourses(asArray(res.data)))
+          .catch(() => setCourses([]));
+        axios.get(`${API_BASE_URL}/admin/students`, { headers: { Authorization: `Bearer ${token}` } })
+          .then(res => setStudents(asArray(res.data)))
+          .catch(() => setStudents([]));
     }, []);
 
     const handleSend = async () => {

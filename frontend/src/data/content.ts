@@ -89,7 +89,7 @@ export const hero = {
     label: "Talk to an Advisor",
     href: `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}`,
   },
-  // Keep this path in sync with the preload in index.html
+  // Preloaded only while HomePage is mounted (see HomePage.tsx)
   image: {
     src: "/images/hero-instructor-engaged.jpg",
     alt: "Professional instructor leading an interactive training session with engaged professionals",

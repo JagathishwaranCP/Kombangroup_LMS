@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import API_BASE_URL from './config';
+import { asArray } from "./utils/array";
 import {
   ChevronDown, ChevronRight, CheckCircle, ExternalLink,
   User, FileText, FolderOpen, AlertTriangle, X
@@ -34,9 +35,10 @@ const AssignmentManager = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-      setData(res.data);
+      setData(asArray(res.data));
     } catch (err) {
       console.error("Error fetching assignments:", err);
+      setData([]);
     } finally {
       setLoading(false);
     }

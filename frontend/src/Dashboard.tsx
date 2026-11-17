@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { asArray } from "./utils/array";
+import { isDemoToken } from "./utils/session";
 
 const Dashboard = () => {
   // ✅ Initialize with 0 so it animates to the real number
@@ -45,22 +47,27 @@ const Dashboard = () => {
       const storedRole = localStorage.getItem("role") || "student"; // Defaulting to student if not found
       setUserRole(storedRole);
 
+      // Frontend-only review tokens cannot call the live API — keep empty stats.
+      if (isDemoToken(token)) return;
+
       try {
         const config = { headers: { Authorization: `Bearer ${token}` } };
 
         // 1. Fetch Real Courses Count
         const coursesRes = await axios.get(`${API_BASE_URL}/courses`, config);
+        const courses = asArray(coursesRes.data);
 
         // 2. Fetch Real Students Count (Only if instructor)
         let studentCount = 0;
         if (storedRole === "instructor") {
           try {
-            const studentsRes = await axios.get(`${API_BASE_URL}/admin/students`, config); studentCount = studentsRes.data.length;
+            const studentsRes = await axios.get(`${API_BASE_URL}/admin/students`, config);
+            studentCount = asArray(studentsRes.data).length;
           } catch (e) { console.log("Not authorized to fetch students"); }
         }
 
         // 3. Calculate Real Stats
-        const courseCount = coursesRes.data.length;
+        const courseCount = courses.length;
         const revenue = studentCount * 599; // Assuming ₹599 per student
 
         setStats(prev => ({
@@ -73,8 +80,9 @@ const Dashboard = () => {
 
         // 4. CHECK FOR ACTIVE LIVE SESSION
         const liveRes = await axios.get(`${API_BASE_URL}/live/active`, config);
-        if (liveRes.data && liveRes.data.length > 0) {
-          setActiveSession(liveRes.data[0]);
+        const liveSessions = asArray(liveRes.data);
+        if (liveSessions.length > 0) {
+          setActiveSession(liveSessions[0]);
         }
 
       } catch (err) { console.error("Failed to load dashboard stats", err); }
@@ -191,8 +199,8 @@ const Dashboard = () => {
               <IndianRupee size={24} strokeWidth={1.5} color={theme.iconColor} />
             </div>
           </div>
-          <div className="h-10 w-full">
-            <ResponsiveContainer>
+          <div className="h-10 w-full min-w-0">
+            <ResponsiveContainer width="100%" height={40}>
               <AreaChart data={sparkData}>
                 <Area type="monotone" dataKey="val" stroke="#94a3b8" fill="#e2e8f0" strokeWidth={2} />
               </AreaChart>
@@ -218,32 +226,34 @@ const Dashboard = () => {
       </div>
 
       {/* Main Chart */}
-      <div style={{ background: theme.cardBg, borderColor: theme.border }} className="p-6 rounded-2xl border h-[350px]">
-        <h3 className="text-base font-bold text-slate-800 mb-5">Student Activity</h3>
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={activityData}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dy={10} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
-            <Tooltip
-              contentStyle={{
-                borderRadius: '12px',
-                border: 'none',
-                boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
-                background: '#FFFFFF',
-                color: '#1e293b'
-              }}
-            />
-            <Line
-              type="monotone"
-              dataKey="students"
-              stroke={theme.chartLine}
-              strokeWidth={3}
-              dot={{ r: 4, fill: theme.chartLine }}
-              activeDot={{ r: 6 }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
+      <div style={{ background: theme.cardBg, borderColor: theme.border }} className="p-6 rounded-2xl border flex flex-col h-[350px]">
+        <h3 className="text-base font-bold text-slate-800 mb-5 shrink-0">Student Activity</h3>
+        <div className="flex-1 min-h-0 min-w-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={activityData}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} dy={10} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: "#64748b", fontSize: 12 }} />
+              <Tooltip
+                contentStyle={{
+                  borderRadius: '12px',
+                  border: 'none',
+                  boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)',
+                  background: '#FFFFFF',
+                  color: '#1e293b'
+                }}
+              />
+              <Line
+                type="monotone"
+                dataKey="students"
+                stroke={theme.chartLine}
+                strokeWidth={3}
+                dot={{ r: 4, fill: theme.chartLine }}
+                activeDot={{ r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* --- STUDENT MODAL: PLAY LIVE STREAM --- */}

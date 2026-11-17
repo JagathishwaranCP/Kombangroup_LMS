@@ -899,7 +899,7 @@ const CoursePlayer = () => {
                     </div>
 
                     <div className="flex-1 overflow-y-auto p-0">
-                        {course?.modules.map((module: any, idx: number) => {
+                        {(Array.isArray(course?.modules) ? course.modules : []).map((module: any, idx: number) => {
                             const isModuleComplete = module.lessons.length > 0 && module.lessons.every((l: any) => l.is_completed);
                             return (
                                 <div key={module.id} className="border-b border-slate-100">
@@ -912,7 +912,7 @@ const CoursePlayer = () => {
                                     </div>
                                     {expandedModules.includes(module.id) && (
                                         <div className="animate-fade-in">
-                                            {module.lessons.map((lesson: any) => {
+                                            {(Array.isArray(module.lessons) ? module.lessons : []).map((lesson: any) => {
                                                 const isActive = activeLesson?.id === lesson.id;
                                                 return (
                                                     <div
