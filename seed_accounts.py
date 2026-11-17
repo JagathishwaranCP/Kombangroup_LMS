@@ -1,4 +1,4 @@
-"""Create the KOMBAN admin (instructor) and learner (student) accounts."""
+"""Create the single CloudConnekt admin (instructor) and learner (student) accounts."""
 import os
 import requests
 
@@ -6,20 +6,20 @@ BASE_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
 
 ACCOUNTS = [
     {
-        "email": "kombanadmin@gmail.com",
-        "password": "kombanadmin@123",
-        "name": "KOMBAN Admin",
+        "email": "admin@cloudconnekt.com",
+        "password": "Admin@123",
+        "name": "CloudConnekt Admin",
         "role": "instructor",
-        "phone_number": "9000000001",
+        "phone_number": "9000000011",
         "label": "Admin / Instructor",
         "login_path": "/admin-login",
     },
     {
-        "email": "kombanuser@gmail.com",
-        "password": "kombanuser@123",
-        "name": "KOMBAN User",
+        "email": "user@cloudconnekt.com",
+        "password": "User@123",
+        "name": "CloudConnekt User",
         "role": "student",
-        "phone_number": "9000000002",
+        "phone_number": "9000000012",
         "label": "Learner / Student",
         "login_path": "/login",
     },
@@ -52,7 +52,6 @@ def upsert_account(account: dict) -> None:
         print(f"Failed ({response.status_code}): {response.text}")
         return
 
-    # Verify login works with the requested password
     login = requests.post(
         f"{BASE_URL}/login",
         data={"username": account["email"], "password": account["password"]},
@@ -68,7 +67,7 @@ def upsert_account(account: dict) -> None:
 
 
 if __name__ == "__main__":
-    print("Seeding KOMBAN admin + user accounts...")
+    print("Seeding CloudConnekt admin + user accounts...")
     for account in ACCOUNTS:
         upsert_account(account)
     print("\nDone.")

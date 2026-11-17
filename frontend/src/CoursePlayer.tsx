@@ -4,6 +4,7 @@ import axios from "axios";
 import Plyr from "plyr-react";
 import "plyr/dist/plyr.css";
 import API_BASE_URL from './config';
+import { usePricingLocale } from "./hooks/usePricingLocale";
 import {
     PlayCircle, FileText, ChevronLeft, Menu, HelpCircle,
     UploadCloud, ChevronDown, ChevronRight, CreditCard,
@@ -460,6 +461,7 @@ const LiveTestProctor = ({ lesson }: { lesson: any }) => {
 const CoursePlayer = () => {
     const { courseId } = useParams();
     const navigate = useNavigate();
+    const { formatPrice } = usePricingLocale();
     const [course, setCourse] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [activeLesson, setActiveLesson] = useState<any>(null);
@@ -837,9 +839,9 @@ const CoursePlayer = () => {
 
                     <div className="bg-slate-50 rounded-xl p-4 mb-6 border border-slate-100">
                         <p className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">Total Price</p>
-                        {/* ✅ DYNAMIC PRICE */}
+                        {/* ✅ DYNAMIC PRICE (INR India / USD global display) */}
                         <p className="text-3xl font-extrabold text-slate-900">
-                            ₹{displayPrice} <span className="text-lg font-medium text-slate-400 line-through">₹{originalPrice}</span>
+                            {formatPrice(displayPrice)} <span className="text-lg font-medium text-slate-400 line-through">{formatPrice(originalPrice)}</span>
                         </p>
                     </div>
 

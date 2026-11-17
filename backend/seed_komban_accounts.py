@@ -1,6 +1,8 @@
 """
-Upsert admin + learner accounts directly in the local DB.
-Safe to re-run — updates password/role if the email already exists.
+Upsert the single CloudConnekt admin + learner pair.
+Also deactivates legacy KOMBAN demo accounts so only one access set remains.
+
+Safe to re-run.
 """
 import asyncio
 import sys
@@ -16,20 +18,6 @@ import models
 
 ACCOUNTS = [
     {
-        "email": "kombanadmin@gmail.com",
-        "password": "kombanadmin@123",
-        "full_name": "KOMBAN Admin",
-        "role": "instructor",
-        "phone_number": "9000000001",
-    },
-    {
-        "email": "kombanuser@gmail.com",
-        "password": "kombanuser@123",
-        "full_name": "KOMBAN User",
-        "role": "student",
-        "phone_number": "9000000002",
-    },
-    {
         "email": "admin@cloudconnekt.com",
         "password": "Admin@123",
         "full_name": "CloudConnekt Admin",
@@ -43,6 +31,14 @@ ACCOUNTS = [
         "role": "student",
         "phone_number": "9000000012",
     },
+]
+
+LEGACY_EMAILS = [
+    "kombanadmin@gmail.com",
+    "kombanuser@gmail.com",
+    "admin@komban.com",
+    "instructor@komban.com",
+    "student@komban.com",
 ]
 
 
@@ -80,8 +76,23 @@ async def seed() -> None:
                 )
                 action = "created"
             print(f"{action}: {account['email']} ({account['role']})")
+
+        # Deactivate legacy dual KOMBAN accounts
+        legacy = await db.execute(
+            select(models.User).where(models.User.email.in_(LEGACY_EMAILS))
+        )
+        for user in legacy.scalars().all():
+            user.is_active = False
+            print(f"deactivated legacy: {user.email}")
+
         await db.commit()
-    print("Accounts ready.")
+
+    print()
+    print("CloudConnekt access ready (single admin + user).")
+    print("----------------------------------------")
+    print("ADMIN  : admin@cloudconnekt.com / Admin@123  → /admin-login")
+    print("USER   : user@cloudconnekt.com  / User@123   → /login")
+    print("----------------------------------------")
 
 
 if __name__ == "__main__":

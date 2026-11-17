@@ -11,6 +11,7 @@ import {
 import { motion } from "framer-motion";
 
 import BrandLogo from "./components/BrandLogo";
+import { usePricingLocale } from "./hooks/usePricingLocale";
 import { clearSession, getValidSession, isDemoToken } from "./utils/session";
 
 // --- TYPES ---
@@ -61,7 +62,7 @@ const StatCard = ({ icon: Icon, label, value }: any) => (
     </motion.div>
 );
 
-const CourseCard = ({ course, type, navigate, handleFreeEnroll, openEnrollModal, handleDownloadSyllabus, onPayClick }: any) => {
+const CourseCard = ({ course, type, navigate, handleFreeEnroll, openEnrollModal, handleDownloadSyllabus, onPayClick, formatPrice }: any) => {
     const getImageUrl = (url: string) => {
         if (!url) return "";
         return url.startsWith('http') ? url : `${API_BASE_URL.replace('/api/v1', '')}/${url}`;
@@ -112,7 +113,7 @@ const CourseCard = ({ course, type, navigate, handleFreeEnroll, openEnrollModal,
                                     onClick={(e) => { e.stopPropagation(); onPayClick(course); }}
                                     className="bg-green-100 text-green-700 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-green-200 transition-colors border border-green-200 animate-pulse"
                                 >
-                                    Pay ₹{course.price}
+                                    Pay {formatPrice(course.price)}
                                 </button>
                             ) : (
                                 <span className="text-sm font-bold text-slate-400">Lifetime Access</span>
@@ -120,7 +121,7 @@ const CourseCard = ({ course, type, navigate, handleFreeEnroll, openEnrollModal,
                         </div>
                     ) : (
                         <span className={`text-lg font-extrabold ${course.price === 0 ? "text-[#C09A2E]" : "text-[#0A0A0A]"}`}>
-                            {course.price === 0 ? "Free" : `₹${course.price}`}
+                            {formatPrice(course.price)}
                         </span>
                     )}
 
@@ -161,6 +162,7 @@ const CourseCard = ({ course, type, navigate, handleFreeEnroll, openEnrollModal,
 
 const StudentDashboard = () => {
     const navigate = useNavigate();
+    const { formatPrice } = usePricingLocale();
     const RAZORPAY_PAYLINK_URL = import.meta.env.VITE_RAZORPAY_PAYLINK_URL;
     const [activeTab, setActiveTab] = useState("home");
 
@@ -644,6 +646,7 @@ const StudentDashboard = () => {
                                         course={c}
                                         type="enrolled"
                                         navigate={navigate}
+                                        formatPrice={formatPrice}
                                         handleDownloadSyllabus={handleDownloadSyllabus}
                                         onPayClick={(course: Course) => {
                                             // Reuse modal logic for payment
@@ -661,7 +664,7 @@ const StudentDashboard = () => {
                 {/* EXPLORE TAB */}
                 {activeTab === "explore" && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {availableCourses.map(c => <CourseCard key={c.id} course={c} type="available" handleFreeEnroll={handleFreeEnroll} openEnrollModal={openEnrollModal} />)}
+                        {availableCourses.map(c => <CourseCard key={c.id} course={c} type="available" handleFreeEnroll={handleFreeEnroll} openEnrollModal={openEnrollModal} formatPrice={formatPrice} />)}
                     </div>
                 )}
 
@@ -761,7 +764,7 @@ const StudentDashboard = () => {
 
                         <div className="p-6">
                             <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 mb-6 flex items-center justify-between">
-                                <div><span className="block text-[10px] font-bold text-slate-400 uppercase">Price</span><span className="text-2xl font-extrabold text-[#0A0A0A]">₹{selectedCourse.price}</span></div>
+                                <div><span className="block text-[10px] font-bold text-slate-400 uppercase">Price</span><span className="text-2xl font-extrabold text-[#0A0A0A]">{formatPrice(selectedCourse.price)}</span></div>
                                 <div className="text-right"><span className="block text-[10px] font-bold text-slate-400 uppercase">Access</span><span className="text-sm font-bold text-slate-700">Lifetime</span></div>
                             </div>
 

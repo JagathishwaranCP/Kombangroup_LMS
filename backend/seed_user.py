@@ -1,53 +1,37 @@
 import requests
 
-# ✅ POINT TO YOUR API
 API_URL = "http://127.0.0.1:8000/api/v1/users"
 
 def seed_users():
-    # 1. Define Instructor Data (Added phone_number)
     instructor = {
-        "email": "instructor@komban.com",
-        "password": "password123",
-        "name": "Master Instructor",
+        "email": "admin@cloudconnekt.com",
+        "password": "Admin@123",
+        "name": "CloudConnekt Admin",
         "role": "instructor",
-        "phone_number": "9876543210" # <--- REQUIRED NOW
+        "phone_number": "9000000011",
     }
 
-    # 2. Define Student Data (Added phone_number)
     student = {
-        "email": "student@komban.com",
-        "password": "password123",
-        "name": "Test Student",
+        "email": "user@cloudconnekt.com",
+        "password": "User@123",
+        "name": "CloudConnekt User",
         "role": "student",
-        "phone_number": "9123456789" # <--- REQUIRED NOW
+        "phone_number": "9000000012",
     }
 
-    # 3. Send Requests
-    print("🌱 Seeding Database...")
+    print("Seeding CloudConnekt accounts...")
 
-    # Create Instructor
-    try:
-        res = requests.post(API_URL, json=instructor)
-        if res.status_code == 201:
-            print("✅ Instructor Created: instructor@komban.com / securepassword")
-        elif res.status_code == 400:
-            print("⚠️ Instructor already exists.")
-        else:
-            print(f"❌ Failed to create instructor: {res.status_code} - {res.text}")
-    except Exception as e:
-        print(f"❌ Connection Error: {e}")
-
-    # Create Student
-    try:
-        res = requests.post(API_URL, json=student)
-        if res.status_code == 201:
-            print("✅ Student Created: student@komban.com / securepassword")
-        elif res.status_code == 400:
-            print("⚠️ Student already exists.")
-        else:
-            print(f"❌ Failed to create student: {res.status_code} - {res.text}")
-    except Exception as e:
-        print(f"❌ Connection Error: {e}")
+    for account, label in ((instructor, "Admin"), (student, "User")):
+        try:
+            res = requests.post(API_URL, json=account)
+            if res.status_code == 201:
+                print(f"Created {label}: {account['email']}")
+            elif res.status_code == 400:
+                print(f"{label} already exists: {account['email']}")
+            else:
+                print(f"Failed to create {label}: {res.status_code} - {res.text}")
+        except Exception as e:
+            print(f"Connection Error: {e}")
 
 if __name__ == "__main__":
     seed_users()
