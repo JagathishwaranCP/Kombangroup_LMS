@@ -187,7 +187,7 @@ const StudentManagement = () => {
 
                     <td style={{ padding: "20px" }}>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                        {asArray(student.enrolled_courses).length > 0 ? asArray(student.enrolled_courses).map((c, i) => (
+                        {asArray<string>(student.enrolled_courses).length > 0 ? asArray<string>(student.enrolled_courses).map((c, i) => (
                           <span key={i} style={{ fontSize: "11px", background: "#f1f5f9", padding: "4px 8px", borderRadius: "4px", color: brand.textMain, border: `1px solid ${brand.border}` }}>
                             {c}
                           </span>
