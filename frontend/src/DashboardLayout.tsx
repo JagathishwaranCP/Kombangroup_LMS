@@ -21,7 +21,7 @@ const DashboardLayout = () => {
     { label: "Home", path: "/dashboard", icon: <LayoutDashboard size={20} /> },
     { label: "My Courses", path: "/dashboard/courses", icon: <BookOpen size={20} /> },
     { label: "Create Course", path: "/dashboard/create-course", icon: <PlusCircle size={20} /> },
-    { label: "Add Students", path: "/dashboard/add-admits", icon: <UserPlus size={20} /> },
+    { label: "Add Students", path: "/dashboard/add-students", icon: <UserPlus size={20} /> },
     { label: "Students", path: "/dashboard/students", icon: <Users size={20} /> },
     // ✅ NEW: Assignment Verification Link
     { label: "Verification", path: "/dashboard/assignments", icon: <FolderOpen size={20} /> },

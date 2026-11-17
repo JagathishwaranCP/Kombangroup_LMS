@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { FileText,  PlusCircle, BookOpen, Trash2, CheckCircle,  X, AlertTriangle } from "lucide-react"; // ✅ Added Icons
 import API_BASE_URL from './config';
@@ -162,9 +162,10 @@ function App() {
           <Route path="create-course" element={<CreateCourse />} />
           <Route path="course/:courseId/builder" element={<CourseBuilder />} />
           <Route path="assignments" element={<AssignmentManager />} />
-          <Route path="add-admits" element={<AddAdmits />} />
+          <Route path="add-students" element={<AddAdmits />} />
+          <Route path="add-admits" element={<Navigate to="/dashboard/add-students" replace />} />
           <Route path="course/:courseId/preview" element={<CoursePreview />} />
-          <Route path="course/:courseId/CoursePreview" element={<CoursePreview />} />
+          <Route path="course/:courseId/CoursePreview" element={<LegacyCoursePreviewRedirect />} />
           <Route path="students" element={<StudentManagement />} />
           <Route path="settings" element={<InstructorSettings />} />
           <Route path="messages" element={<Messages />} />
@@ -180,9 +181,12 @@ function App() {
 
 const ProtectedRoute = ({ children, requiredRole }: { children: any, requiredRole?: string }) => {
   const session = getValidSession();
-  if (!session?.token) return <Navigate to="/login" replace />;
+  if (!session?.token) {
+    // Instructors should land on admin login; students on learner login.
+    return <Navigate to={requiredRole === "instructor" ? "/admin-login" : "/login"} replace />;
+  }
   if (requiredRole && session.role !== requiredRole) {
-    return session.role === "instructor" ? <Navigate to="/dashboard" /> : <Navigate to="/student-dashboard" />;
+    return session.role === "instructor" ? <Navigate to="/dashboard" replace /> : <Navigate to="/student-dashboard" replace />;
   }
   return children;
 };
@@ -191,6 +195,11 @@ const PublicOnlyRoute = ({ children }: { children: any }) => {
   const session = getValidSession();
   if (!session?.token) return children;
   return session.role === "instructor" ? <Navigate to="/dashboard" replace /> : <Navigate to="/student-dashboard" replace />;
+};
+
+const LegacyCoursePreviewRedirect = () => {
+  const { courseId } = useParams();
+  return <Navigate to={`/dashboard/course/${courseId}/preview`} replace />;
 };
 
 const FallbackRoute = () => {

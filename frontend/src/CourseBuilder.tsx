@@ -519,7 +519,7 @@ const CourseBuilder = () => {
 
                 <div className="flex items-center gap-2 md:gap-3">
                     <button
-                        onClick={() => navigate(`/dashboard/course/${courseId}/CoursePreview`)}
+                        onClick={() => navigate(`/dashboard/course/${courseId}/preview`)}
                         className="px-3 py-2 md:px-5 md:py-2.5 bg-white text-[#0A0A0A] border border-[#0A0A0A] rounded-lg font-bold hover:bg-blue-50 transition-colors whitespace-nowrap text-xs md:text-sm"
                     >
                         Preview
