@@ -1,5 +1,5 @@
 /**
- * CloudConnekt review logins (frontend-only).
+ * CloudconneKt review logins (frontend-only).
  * These credentials work without a production database so stakeholders
  * can open the admin / user portals for review.
  */
@@ -7,14 +7,14 @@ export const cloudConnektAccounts = {
   admin: {
     email: "admin@cloudconnekt.com",
     password: "Admin@123",
-    label: "CloudConnekt Admin",
+    label: "CloudconneKt Admin",
     role: "instructor" as const,
     portal: "/admin-login",
   },
   user: {
     email: "user@cloudconnekt.com",
     password: "User@123",
-    label: "CloudConnekt User",
+    label: "CloudconneKt User",
     role: "student" as const,
     portal: "/login",
   },

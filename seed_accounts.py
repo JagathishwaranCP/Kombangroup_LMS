@@ -1,4 +1,4 @@
-"""Create the single CloudConnekt admin (instructor) and learner (student) accounts."""
+"""Create the single CloudconneKt admin (instructor) and learner (student) accounts."""
 import os
 import requests
 
@@ -8,7 +8,7 @@ ACCOUNTS = [
     {
         "email": "admin@cloudconnekt.com",
         "password": "Admin@123",
-        "name": "CloudConnekt Admin",
+        "name": "CloudconneKt Admin",
         "role": "instructor",
         "phone_number": "9000000011",
         "label": "Admin / Instructor",
@@ -17,7 +17,7 @@ ACCOUNTS = [
     {
         "email": "user@cloudconnekt.com",
         "password": "User@123",
-        "name": "CloudConnekt User",
+        "name": "CloudconneKt User",
         "role": "student",
         "phone_number": "9000000012",
         "label": "Learner / Student",
@@ -67,7 +67,7 @@ def upsert_account(account: dict) -> None:
 
 
 if __name__ == "__main__":
-    print("Seeding CloudConnekt admin + user accounts...")
+    print("Seeding CloudconneKt admin + user accounts...")
     for account in ACCOUNTS:
         upsert_account(account)
     print("\nDone.")

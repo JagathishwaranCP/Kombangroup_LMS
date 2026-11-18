@@ -1,5 +1,5 @@
 """
-Upsert the single CloudConnekt admin + learner pair.
+Upsert the single CloudconneKt admin + learner pair.
 Also deactivates legacy KOMBAN demo accounts so only one access set remains.
 
 Safe to re-run.
@@ -20,14 +20,14 @@ ACCOUNTS = [
     {
         "email": "admin@cloudconnekt.com",
         "password": "Admin@123",
-        "full_name": "CloudConnekt Admin",
+        "full_name": "CloudconneKt Admin",
         "role": "instructor",
         "phone_number": "9000000011",
     },
     {
         "email": "user@cloudconnekt.com",
         "password": "User@123",
-        "full_name": "CloudConnekt User",
+        "full_name": "CloudconneKt User",
         "role": "student",
         "phone_number": "9000000012",
     },
@@ -88,7 +88,7 @@ async def seed() -> None:
         await db.commit()
 
     print()
-    print("CloudConnekt access ready (single admin + user).")
+    print("CloudconneKt access ready (single admin + user).")
     print("----------------------------------------")
     print("ADMIN  : admin@cloudconnekt.com / Admin@123  → /admin-login")
     print("USER   : user@cloudconnekt.com  / User@123   → /login")

@@ -4,12 +4,12 @@ import os
 BASE_URL = os.getenv("API_URL", "http://127.0.0.1:8000/api/v1")
 
 def create_instructor():
-    print("Creating CloudConnekt Admin/Instructor user...")
+    print("Creating CloudconneKt Admin/Instructor user...")
 
     payload = {
         "email": "admin@cloudconnekt.com",
         "password": "Admin@123",
-        "name": "CloudConnekt Admin",
+        "name": "CloudconneKt Admin",
         "role": "instructor",
         "phone_number": "9000000011",
     }

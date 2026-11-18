@@ -31,7 +31,7 @@ const AdminLogin = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const fillCloudConnektAdmin = () => {
+  const fillCloudconneKtAdmin = () => {
     setFormData({
       email: cloudConnektAccounts.admin.email,
       password: cloudConnektAccounts.admin.password,
@@ -51,7 +51,7 @@ const AdminLogin = () => {
       const demo = tryDemoLogin(formData.email, formData.password, "instructor");
       if (demo) {
         saveSession(demo.access_token, demo.role);
-        triggerToast("CloudConnekt admin login successful! Redirecting...", "success");
+        triggerToast("CloudconneKt admin login successful! Redirecting...", "success");
         setTimeout(() => navigate("/dashboard"), 800);
         return;
       }
@@ -75,7 +75,7 @@ const AdminLogin = () => {
       const detail = err?.response?.data?.detail;
       if (!err?.response) {
         triggerToast(
-          "Cannot reach CloudConnekt API from this device. Use the CloudConnekt Admin Login card for review access without a database.",
+          "Cannot reach CloudconneKt API from this device. Use the CloudconneKt Admin Login card for review access without a database.",
           "error",
         );
       } else {
@@ -98,15 +98,15 @@ const AdminLogin = () => {
         <div className="flex flex-col items-center text-center">
           <div className="mb-2"><BrandLogo size="lg" showTagline /></div>
 
-          <h1 className="text-3xl font-extrabold text-slate-800 mt-4 mb-2">CloudConnekt Admin Login</h1>
-          <p className="text-slate-500 text-sm mb-5 px-4">Secure login for CloudConnekt administrators.</p>
+          <h1 className="text-3xl font-extrabold text-slate-800 mt-4 mb-2">CloudconneKt Admin Login</h1>
+          <p className="text-slate-500 text-sm mb-5 px-4">Secure login for CloudconneKt administrators.</p>
 
           <button
             type="button"
-            onClick={fillCloudConnektAdmin}
+            onClick={fillCloudconneKtAdmin}
             className="mb-5 w-full rounded-xl border border-[#091941]/20 bg-[#091941]/5 px-4 py-3 text-left transition-colors hover:bg-[#091941]/10"
           >
-            <p className="text-xs font-bold uppercase tracking-wide text-[#091941]">CloudConnekt Admin Login</p>
+            <p className="text-xs font-bold tracking-wide text-[#091941]">CloudconneKt Admin Login</p>
             <p className="mt-1 text-sm font-semibold text-slate-700">{cloudConnektAccounts.admin.email}</p>
             <p className="text-xs text-slate-500">Review login — works without a database</p>
           </button>
@@ -150,7 +150,7 @@ const AdminLogin = () => {
           </form>
 
           <div className="mt-8 pt-6 border-t border-slate-200 w-full">
-            <p className="text-xs text-slate-400 font-medium">Need help? Contact <span className={`font-bold cursor-pointer hover:underline ${gradientText}`}>CloudConnekt Admin Support</span>.</p>
+            <p className="text-xs text-slate-400 font-medium">Need help? Contact <span className={`font-bold cursor-pointer hover:underline ${gradientText}`}>CloudconneKt Admin Support</span>.</p>
           </div>
         </div>
       </div>

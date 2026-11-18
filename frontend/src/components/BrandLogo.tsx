@@ -21,7 +21,7 @@ const BrandLogo: React.FC<BrandLogoProps> = ({ size = "md", showTagline = false,
         <div className={`flex flex-col items-start leading-none ${className}`}>
             <img
                 src="/cloudconnekt-logo.png"
-                alt="CloudConnekt"
+                alt="CloudconneKt"
                 className={`${heightClasses[size]} w-auto object-contain`}
             />
             {showTagline && (

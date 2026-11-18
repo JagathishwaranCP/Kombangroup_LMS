@@ -6,7 +6,7 @@ def seed_users():
     instructor = {
         "email": "admin@cloudconnekt.com",
         "password": "Admin@123",
-        "name": "CloudConnekt Admin",
+        "name": "CloudconneKt Admin",
         "role": "instructor",
         "phone_number": "9000000011",
     }
@@ -14,12 +14,12 @@ def seed_users():
     student = {
         "email": "user@cloudconnekt.com",
         "password": "User@123",
-        "name": "CloudConnekt User",
+        "name": "CloudconneKt User",
         "role": "student",
         "phone_number": "9000000012",
     }
 
-    print("Seeding CloudConnekt accounts...")
+    print("Seeding CloudconneKt accounts...")
 
     for account, label in ((instructor, "Admin"), (student, "User")):
         try:

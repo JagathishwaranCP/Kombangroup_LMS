@@ -1,5 +1,5 @@
 """
-Upsert CloudConnekt admin (instructor) + learner (student) accounts.
+Upsert CloudconneKt admin (instructor) + learner (student) accounts.
 Safe to re-run — updates password/role if the email already exists.
 
 Login portals:
@@ -22,14 +22,14 @@ ACCOUNTS = [
     {
         "email": "admin@cloudconnekt.com",
         "password": "Admin@123",
-        "full_name": "CloudConnekt Admin",
+        "full_name": "CloudconneKt Admin",
         "role": "instructor",
         "phone_number": "9000000011",
     },
     {
         "email": "user@cloudconnekt.com",
         "password": "User@123",
-        "full_name": "CloudConnekt User",
+        "full_name": "CloudconneKt User",
         "role": "student",
         "phone_number": "9000000012",
     },
@@ -73,7 +73,7 @@ async def seed() -> None:
         await db.commit()
 
     print()
-    print("CloudConnekt accounts ready.")
+    print("CloudconneKt accounts ready.")
     print("----------------------------------------")
     print("ADMIN (Instructor)")
     print("  Portal : /admin-login")

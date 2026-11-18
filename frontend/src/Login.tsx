@@ -42,7 +42,7 @@ const Login = () => {
   const API_URL = API_BASE_URL;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { setFormData({ ...formData, [e.target.name]: e.target.value }); };
-  const fillCloudConnektUser = () => {
+  const fillCloudconneKtUser = () => {
     setIsSignUp(false);
     setFormData((prev) => ({
       ...prev,
@@ -80,7 +80,7 @@ const Login = () => {
         const demo = tryDemoLogin(formData.email, formData.password, "student");
         if (demo) {
           saveSession(demo.access_token, demo.role);
-          triggerToast("CloudConnekt user login successful! Redirecting...", "success");
+          triggerToast("CloudconneKt user login successful! Redirecting...", "success");
           setTimeout(() => navigate("/student-dashboard"), 800);
           return;
         }
@@ -110,7 +110,7 @@ const Login = () => {
     } catch (err: any) {
       if (!err?.response) {
         triggerToast(
-          "Cannot reach CloudConnekt API from this device. Use the CloudConnekt User Login card for review access without a database.",
+          "Cannot reach CloudconneKt API from this device. Use the CloudconneKt User Login card for review access without a database.",
           "error",
         );
       } else {
@@ -138,15 +138,15 @@ const Login = () => {
         `}>
           <form onSubmit={handleAuth} className="bg-[#F8FAFC] flex flex-col items-center justify-center w-full h-full px-8 py-10 lg:px-12 text-center">
             <div className="mb-4"><BrandLogo size="xl" showTagline /></div>
-            <h1 className="text-2xl font-bold text-slate-800 mb-1">CloudConnekt Login</h1>
-            <p className="text-slate-400 text-sm mb-5">Sign in with your CloudConnekt learner account</p>
+            <h1 className="text-2xl font-bold text-slate-800 mb-1">CloudconneKt Login</h1>
+            <p className="text-slate-400 text-sm mb-5">Sign in with your CloudconneKt learner account</p>
 
             <button
               type="button"
-              onClick={fillCloudConnektUser}
+              onClick={fillCloudconneKtUser}
               className="mb-5 w-full max-w-[350px] rounded-xl border border-[#5755D9]/25 bg-[#5755D9]/5 px-4 py-3 text-left transition-colors hover:bg-[#5755D9]/10"
             >
-              <p className="text-xs font-bold uppercase tracking-wide text-[#5755D9]">CloudConnekt User Login</p>
+              <p className="text-xs font-bold tracking-wide text-[#5755D9]">CloudconneKt User Login</p>
               <p className="mt-1 text-sm font-semibold text-slate-700">{cloudConnektAccounts.user.email}</p>
               <p className="text-xs text-slate-500">Review login — works without a database</p>
             </button>

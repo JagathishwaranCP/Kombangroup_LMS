@@ -67,7 +67,7 @@ const HOW_STEPS = [
   {
     n: "01",
     title: "Log in",
-    desc: "Sign in with your CloudConnekt Learning Hub account.",
+    desc: "Sign in with your CloudconneKt Learning Hub account.",
     image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=640&q=60",
   },
   {
@@ -139,7 +139,7 @@ const COACHING_BANNER_IMAGE =
 
 const FAQS = [
   {
-    q: "How do I access the CloudConnekt Learning Hub?",
+    q: "How do I access the CloudconneKt Learning Hub?",
     a: "Select Log in and sign in with your Learning Hub credentials. If you need an account, use the sign-up screen or write to support@cloudconnekt.com.",
   },
   {
@@ -152,7 +152,7 @@ const FAQS = [
   },
   {
     q: "Can my company enroll a team?",
-    a: "Yes. CloudConnekt supports corporate enrollments and cohort learning. Email support@cloudconnekt.com for a team plan.",
+    a: "Yes. CloudconneKt supports corporate enrollments and cohort learning. Email support@cloudconnekt.com for a team plan.",
   },
   {
     q: "Where can I get help if I cannot log in?",
@@ -327,7 +327,7 @@ const LandingPage = () => {
           <div className="container-k relative z-10 py-16 lg:py-24 w-full">
             <div className="max-w-2xl text-left overlay-copy">
               <p className="text-white font-bold uppercase tracking-[0.18em] text-sm lg:text-base mb-3">
-                CloudConnekt
+                CloudconneKt
               </p>
               <h1
                 id="hero-heading"
@@ -368,7 +368,7 @@ const LandingPage = () => {
                 Key benefits of the Learning Hub
               </h2>
               <p className="text-[#50596C] text-base lg:text-lg">
-                Tools to learn, practice, and certify, built on CloudConnekt’s eLearning experience.
+                Tools to learn, practice, and certify, built on CloudconneKt’s eLearning experience.
               </p>
             </motion.div>
           </div>
@@ -414,7 +414,7 @@ const LandingPage = () => {
                 Choose a learning path
               </h2>
               <p className="text-[#50596C] text-base lg:text-lg">
-                Browse CloudConnekt’s core learning areas and enroll through the Learning Hub.
+                Browse CloudconneKt’s core learning areas and enroll through the Learning Hub.
               </p>
             </motion.div>
             <motion.div {...staggerContainer} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -539,7 +539,7 @@ const LandingPage = () => {
                 What our learners say
               </h2>
               <p className="text-[#50596C] text-base lg:text-lg">
-                Professionals across India, the UAE and beyond use CloudConnekt to upskill and certify.
+                Professionals across India, the UAE and beyond use CloudconneKt to upskill and certify.
               </p>
             </motion.div>
 
@@ -642,11 +642,11 @@ const LandingPage = () => {
               <div className="absolute inset-0 bg-[#091941]/72" />
               <div className="relative z-10 overlay-copy">
                 <div className="inline-flex items-center gap-2 text-[#E8EAF6] text-sm font-semibold uppercase tracking-[0.15em] mb-3">
-                  <Users size={16} /> Coaching with CloudConnekt
+                  <Users size={16} /> Coaching with CloudconneKt
                 </div>
                 <h3 className="heading-light text-2xl lg:text-3xl font-bold mb-3">Interested in coaching with us?</h3>
                 <p className="text-white text-base max-w-2xl lg:mx-auto mb-6">
-                  Join the team that trains and mentors learners across CloudConnekt programs.
+                  Join the team that trains and mentors learners across CloudconneKt programs.
                 </p>
                 <a href="mailto:support@cloudconnekt.com" className="btn-primary inline-flex items-center gap-2">
                   Contact support@cloudconnekt.com
@@ -745,7 +745,7 @@ const LandingPage = () => {
               <ul className="space-y-3 text-sm">
                 <li>
                   <a href="https://www.cloudconnekt.com/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">
-                    CloudConnekt website
+                    CloudconneKt website
                   </a>
                 </li>
                 <li><button type="button" onClick={() => scrollTo("instructors")} className="hover:text-white transition-colors">Instructors</button></li>
@@ -759,7 +759,7 @@ const LandingPage = () => {
               All Axelos® / PeopleCert training programs are accompanied by certifications. Certification is mandatory.
               Accredited courses and exams are resold on behalf of Ducis Management Consulting Private Limited.
             </p>
-            <p className="text-[#C5CAE9]">© {new Date().getFullYear()} CloudConnekt. All rights reserved.</p>
+            <p className="text-[#C5CAE9]">© {new Date().getFullYear()} CloudconneKt. All rights reserved.</p>
           </div>
         </div>
       </footer>

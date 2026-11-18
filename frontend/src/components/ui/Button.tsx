@@ -29,7 +29,7 @@ const base =
 const variants: Record<Variant, string> = {
   // Indigo, as on the site's "Login" button.
   primary: "bg-indigo text-white hover:bg-indigo-hover",
-  // Indigo outline, as on the site's "Coaching with CloudConnekt" button.
+  // Indigo outline, as on the site's "Coaching with CloudconneKt" button.
   outline:
     "border-2 border-indigo-deep uppercase tracking-wider text-navy hover:border-indigo hover:bg-indigo hover:text-white",
 };

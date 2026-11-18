@@ -205,7 +205,7 @@ const StudentDashboard = () => {
             const token = localStorage.getItem("token");
             if (isDemoToken(token)) {
                 setStudentProfile({
-                    name: "CloudConnekt User",
+                    name: "CloudconneKt User",
                     email: "user@cloudconnekt.com",
                     phone: "",
                 });

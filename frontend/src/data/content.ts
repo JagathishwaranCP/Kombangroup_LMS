@@ -46,14 +46,14 @@ const avatar = (id: string, alt: string): ImageAsset => ({
 
 /* ------------------------------------------------------------------ brand */
 
-const SUPPORT_EMAIL = "support@cloudConnekt.com";
+const SUPPORT_EMAIL = "support@cloudconnekt.com";
 const WHATSAPP_NUMBER = "919342202291";
 
 export const brand = {
-  name: "CloudConnekt",
-  homeLabel: "CloudConnekt home",
+  name: "CloudconneKt",
+  homeLabel: "CloudconneKt home",
   description:
-    "CloudConnekt is an online learning platform for upskilling and certification. Learn from experts, practise with real exam-style tests and earn credentials that move your career forward.",
+    "CloudconneKt is an online learning platform for upskilling and certification. Learn from experts, practise with real exam-style tests and earn credentials that move your career forward.",
 };
 
 export const skipLink = "Skip to main content";
@@ -120,7 +120,7 @@ export const achievements = {
   tag: "Our Impact",
   title: ["Learners Who Grew With Us"],
   description:
-    "Learners across India, the UAE, the UK, Canada, Nepal and beyond use CloudConnekt to build new skills, pass certification exams and move ahead in their careers.",
+    "Learners across India, the UAE, the UK, Canada, Nepal and beyond use CloudconneKt to build new skills, pass certification exams and move ahead in their careers.",
   stats: [
     { icon: ClipboardCheck, value: 10, suffix: "K+", label: "Learners Trained" },
     { icon: Award, value: 95, suffix: "%", label: "Exam Pass Rate" },
@@ -243,10 +243,10 @@ export const featuredCourses = {
 /* ------------------------------------------------------------------ about */
 
 export const about = {
-  tag: "About Cloud Connekt",
+  tag: "About CloudconneKt",
   title: ["Learning That Leads", "to Real Results"],
   description:
-    "Cloud Connekt is an online learning platform built for professionals and students who want to grow. We bring together experienced trainers, carefully structured courses and certification-focused practice, so you don’t just learn the topic, you prove it.",
+    "CloudconneKt is an online learning platform built for professionals and students who want to grow. We bring together experienced trainers, carefully structured courses and certification-focused practice, so you don’t just learn the topic, you prove it.",
   badge: { value: "15+", label: "Years of Training Experience" },
   features: [
     {
@@ -475,7 +475,7 @@ export const cta = {
   title: "Ready to Strengthen Your Skills and Get",
   titleAccent: "Certified?",
   description:
-    "Join professionals advancing their careers with Cloud Connekt. Receive course updates, learning resources and offers directly in your inbox.",
+    "Join professionals advancing their careers with CloudconneKt. Receive course updates, learning resources and offers directly in your inbox.",
   form: {
     label: "Email address",
     placeholder: "Enter your work email",

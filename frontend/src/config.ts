@@ -34,7 +34,7 @@ function resolveApiBaseUrl(): string {
         return configured;
       }
       console.warn(
-        `[CloudConnekt] VITE_API_URL missing or loopback in production. Using fallback ${PRODUCTION_API_FALLBACK}. Set VITE_API_URL in Netlify for your live backend.`,
+        `[CloudconneKt] VITE_API_URL missing or loopback in production. Using fallback ${PRODUCTION_API_FALLBACK}. Set VITE_API_URL in Netlify for your live backend.`,
       );
       return PRODUCTION_API_FALLBACK;
     }

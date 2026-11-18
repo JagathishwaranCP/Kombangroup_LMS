@@ -15,13 +15,13 @@ const nameSizes = {
 
 interface LogoProps {
   size?: keyof typeof markSizes;
-  /** Show the CloudConnekt wordmark beside the mark. */
+  /** Show the CloudconneKt wordmark beside the mark. */
   showName?: boolean;
   /** Use light wordmark colours on dark backgrounds. */
   tone?: "light" | "dark";
 }
 
-/** CloudConnekt mark on a clean white tile, optionally with the brand name. */
+/** CloudconneKt mark on a clean white tile, optionally with the brand name. */
 const Logo = ({ size = "md", showName = false, tone = "light" }: LogoProps) => (
   <a
     href="#home"
@@ -49,8 +49,8 @@ const Logo = ({ size = "md", showName = false, tone = "light" }: LogoProps) => (
           nameSizes[size],
         )}
       >
-        <span className={tone === "dark" ? "text-white" : "text-navy"}>Cloud</span>
-        <span className={tone === "dark" ? "text-[#8FB4FF]" : "text-[#6B9FFF]"}>Connekt</span>
+        <span className={tone === "dark" ? "text-white" : "text-navy"}>Cloudconne</span>
+        <span className={tone === "dark" ? "text-[#8FB4FF]" : "text-[#6B9FFF]"}>Kt</span>
       </span>
     )}
   </a>
