@@ -155,7 +155,7 @@ const AddAdmits = () => {
         <div className="bg-white rounded-2xl border border-slate-200 p-6 md:p-8 shadow-sm">
           <div className="border-b border-slate-100 pb-5 mb-6">
             <h2 className="text-xl font-bold flex items-center gap-2 text-[#1e293b]">
-              <UserPlus size={24} className="text-[#0A0A0A]" /> Single Student Admit
+              <UserPlus size={24} className="text-[#0A0A0A]" /> Add Single Student
             </h2>
             <p className="text-slate-500 text-sm mt-1.5 font-medium">Create account & assign free courses manually.</p>
           </div>
